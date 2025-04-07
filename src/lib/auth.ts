@@ -6,7 +6,7 @@ import { mailService } from "../services/mail.service.js";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
-    provider: "postgres",
+    provider: "pg",
   }),
   rateLimit: {
     enabled: true,
@@ -45,5 +45,8 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: process.env.NODE_ENV === "production" ? [process.env.FRONTEND_URL] : ["http://localhost:5173", "http://localhost:3000"],
+  trustedOrigins: process.env.NODE_ENV === "production" ? [process.env.FRONTEND_URL] : ["http://localhost:5173", "http://localhost:3000", "https://ecohavest.org"],
+  logger: {
+    level: "debug",
+  },
 });
