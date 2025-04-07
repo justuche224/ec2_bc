@@ -6,7 +6,7 @@ import { mailService } from "../services/mail.service.js";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
-    provider: "mysql",
+    provider: "postgres",
   }),
   rateLimit: {
     enabled: true,

@@ -1,13 +1,19 @@
 import { relations } from "drizzle-orm";
-import { mysqlTable, varchar, text, timestamp, boolean, mysqlEnum, int, double, } from "drizzle-orm/mysql-core";
-export const user = mysqlTable("user", {
+import { pgTable, varchar, text, timestamp, boolean, pgEnum, integer, doublePrecision, } from "drizzle-orm/pg-core";
+// Define enums first
+export const roleEnum = pgEnum('role', ['ADMIN', 'USER']);
+export const documentTypeEnum = pgEnum('document_type', ['ID_CARD', 'DRIVERS_LICENSE', 'PASSPORT', 'OTHER']);
+export const statusEnum = pgEnum('status', ['PENDING', 'APPROVED', 'REJECTED', 'FAILED', 'ACTIVE', 'COMPLETED', 'CANCELLED']);
+export const currencyEnum = pgEnum('currency', ['BTC', 'ETH', 'USDT', 'SOL', 'BNB', 'LTC']);
+export const transferTypeEnum = pgEnum('transfer_type', ['INTERNAL', 'INTER_USER']);
+export const user = pgTable("user", {
     id: varchar("id", { length: 36 }).primaryKey(),
     name: text("name").notNull(),
     email: varchar("email", { length: 255 }).notNull().unique(),
     emailVerified: boolean("email_verified").notNull(),
     image: text("image"),
     normalizedEmail: varchar("normalized_email", { length: 255 }).unique(),
-    role: mysqlEnum("role", ["ADMIN", "USER"]).notNull().default("USER"),
+    role: roleEnum('role').notNull().default('USER'),
     phone: text("phone"),
     country: text("country"),
     address: text("address"),
@@ -18,7 +24,7 @@ export const user = mysqlTable("user", {
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
 });
-export const referrals = mysqlTable("referrals", {
+export const referrals = pgTable("referrals", {
     id: varchar("id", { length: 36 })
         .primaryKey()
         .$defaultFn(() => crypto.randomUUID()),
@@ -30,7 +36,7 @@ export const referrals = mysqlTable("referrals", {
         .references(() => user.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at").notNull(),
 });
-export const session = mysqlTable("session", {
+export const session = pgTable("session", {
     id: varchar("id", { length: 36 }).primaryKey(),
     expiresAt: timestamp("expires_at").notNull(),
     token: varchar("token", { length: 255 }).notNull().unique(),
@@ -42,7 +48,7 @@ export const session = mysqlTable("session", {
         .notNull()
         .references(() => user.id, { onDelete: "cascade" }),
 });
-export const account = mysqlTable("account", {
+export const account = pgTable("account", {
     id: varchar("id", { length: 36 }).primaryKey(),
     accountId: text("account_id").notNull(),
     providerId: text("provider_id").notNull(),
@@ -59,7 +65,7 @@ export const account = mysqlTable("account", {
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
 });
-export const verification = mysqlTable("verification", {
+export const verification = pgTable("verification", {
     id: varchar("id", { length: 36 }).primaryKey(),
     identifier: text("identifier").notNull(),
     value: text("value").notNull(),
@@ -67,7 +73,7 @@ export const verification = mysqlTable("verification", {
     createdAt: timestamp("created_at"),
     updatedAt: timestamp("updated_at"),
 });
-export const twoFactor = mysqlTable("two_factor", {
+export const twoFactor = pgTable("two_factor", {
     id: varchar("id", { length: 36 }).primaryKey(),
     secret: text("secret").notNull(),
     backupCodes: text("backup_codes").notNull(),
@@ -75,44 +81,30 @@ export const twoFactor = mysqlTable("two_factor", {
         .notNull()
         .references(() => user.id, { onDelete: "cascade" }),
 });
-export const kyc = mysqlTable("kyc", {
+export const kyc = pgTable("kyc", {
     id: varchar("id", { length: 36 })
         .primaryKey()
         .$defaultFn(() => crypto.randomUUID()),
     userId: varchar("user_id", { length: 36 })
         .notNull()
         .references(() => user.id, { onDelete: "cascade" }),
-    documentType: mysqlEnum("document_type", [
-        "ID_CARD",
-        "DRIVERS_LICENSE",
-        "PASSPORT",
-        "OTHER",
-    ]).notNull(),
+    documentType: documentTypeEnum('document_type').notNull(),
     frontImage: text("front_image").notNull(),
     backImage: text("back_image").notNull(),
     selfieImage: text("selfie_image").notNull(),
-    status: mysqlEnum("status", ["PENDING", "APPROVED", "REJECTED"])
-        .notNull()
-        .default("PENDING"),
+    status: statusEnum('status').notNull().default('PENDING'),
     rejectionReason: text("rejection_reason"),
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
 });
-export const wallet = mysqlTable("wallet", {
+export const wallet = pgTable("wallet", {
     id: varchar("id", { length: 36 })
         .primaryKey()
         .$defaultFn(() => crypto.randomUUID()),
     userId: varchar("user_id", { length: 36 })
         .notNull()
         .references(() => user.id, { onDelete: "cascade" }),
-    currency: mysqlEnum("currency", [
-        "BTC",
-        "ETH",
-        "USDT",
-        "SOL",
-        "BNB",
-        "LTC",
-    ]).notNull(),
+    currency: currencyEnum('currency').notNull(),
     address: text("address").notNull(),
     qrCode: text("qr_code").notNull(),
     createdAt: timestamp("created_at").notNull(),
@@ -130,59 +122,45 @@ export const kycRelations = relations(kyc, ({ one }) => ({
         references: [user.id],
     }),
 }));
-export const systemWallet = mysqlTable("system_wallet", {
+export const systemWallet = pgTable("system_wallet", {
     id: varchar("id", { length: 36 })
         .primaryKey()
         .$defaultFn(() => crypto.randomUUID()),
-    currency: mysqlEnum("currency", [
-        "BTC",
-        "ETH",
-        "USDT",
-        "SOL",
-        "BNB",
-        "LTC",
-    ]).notNull(),
+    currency: currencyEnum('currency').notNull(),
     address: text("address").notNull(),
     qrCode: text("qr_code").notNull(),
     isActive: boolean("is_active").notNull().default(true),
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
 });
-export const userWallet = mysqlTable("user_wallet", {
+export const userWallet = pgTable("user_wallet", {
     id: varchar("id", { length: 36 })
         .primaryKey()
         .$defaultFn(() => crypto.randomUUID()),
     userId: varchar("user_id", { length: 36 })
         .notNull()
         .references(() => user.id, { onDelete: "cascade" }),
-    currency: mysqlEnum("currency", [
-        "BTC",
-        "ETH",
-        "USDT",
-        "SOL",
-        "BNB",
-        "LTC",
-    ]).notNull(),
+    currency: currencyEnum('currency').notNull(),
     address: text("address").notNull(),
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
 });
-export const plans = mysqlTable("plans", {
+export const plans = pgTable("plans", {
     id: varchar("id", { length: 36 })
         .primaryKey()
         .$defaultFn(() => crypto.randomUUID()),
     type: varchar("type", { length: 255 }).notNull(),
-    price: int("price").notNull(),
-    minRoiAmount: double("min_roi_amount").notNull(),
-    maxRoiAmount: double("max_roi_amount").notNull(),
-    commission: double("commission").notNull(),
-    percentage: double("percentage").notNull(),
-    duration: int("duration").notNull(),
+    price: integer("price").notNull(),
+    minRoiAmount: doublePrecision("min_roi_amount").notNull(),
+    maxRoiAmount: doublePrecision("max_roi_amount").notNull(),
+    commission: doublePrecision("commission").notNull(),
+    percentage: doublePrecision("percentage").notNull(),
+    duration: integer("duration").notNull(),
     description: text("description").notNull(),
     createdAt: timestamp("created_at"),
     updatedAt: timestamp("updated_at"),
 });
-export const investments = mysqlTable("investments", {
+export const investments = pgTable("investments", {
     id: varchar("id", { length: 36 })
         .primaryKey()
         .$defaultFn(() => crypto.randomUUID()),
@@ -192,24 +170,15 @@ export const investments = mysqlTable("investments", {
     planId: varchar("plan_id", { length: 36 })
         .notNull()
         .references(() => plans.id, { onDelete: "cascade" }),
-    currency: mysqlEnum("currency", [
-        "BTC",
-        "ETH",
-        "USDT",
-        "SOL",
-        "BNB",
-        "LTC",
-    ]).notNull(),
+    currency: currencyEnum('currency').notNull(),
     txn: varchar("txn", { length: 255 }).notNull(),
-    amount: double("amount").notNull(),
-    targetProfit: double("target_profit").notNull(),
-    currentProfit: double("current_profit").notNull(),
-    status: mysqlEnum("status", ["PENDING", "ACTIVE", "COMPLETED", "CANCELLED"])
-        .notNull()
-        .default("PENDING"),
-    noOfROI: int("no_of_roi").notNull(),
-    profitPercent: double("profit_percent").notNull(),
-    nextProfit: double("next_profit").notNull(),
+    amount: doublePrecision("amount").notNull(),
+    targetProfit: doublePrecision("target_profit").notNull(),
+    currentProfit: doublePrecision("current_profit").notNull(),
+    status: statusEnum('status').notNull().default('PENDING'),
+    noOfROI: integer("no_of_roi").notNull(),
+    profitPercent: doublePrecision("profit_percent").notNull(),
+    nextProfit: doublePrecision("next_profit").notNull(),
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
 });
@@ -238,26 +207,19 @@ export const userWalletRelations = relations(userWallet, ({ one }) => ({
         references: [user.id],
     }),
 }));
-export const balance = mysqlTable("balance", {
+export const balance = pgTable("balance", {
     id: varchar("id", { length: 36 })
         .primaryKey()
         .$defaultFn(() => crypto.randomUUID()),
     userId: varchar("user_id", { length: 36 })
         .notNull()
         .references(() => user.id, { onDelete: "cascade" }),
-    currency: mysqlEnum("currency", [
-        "BTC",
-        "ETH",
-        "USDT",
-        "SOL",
-        "BNB",
-        "LTC",
-    ]).notNull(),
+    currency: currencyEnum('currency').notNull(),
     amount: varchar("amount", { length: 255 }).notNull().default("0"),
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
 });
-export const deposit = mysqlTable("deposit", {
+export const deposit = pgTable("deposit", {
     id: varchar("id", { length: 36 })
         .primaryKey()
         .$defaultFn(() => crypto.randomUUID()),
@@ -267,19 +229,9 @@ export const deposit = mysqlTable("deposit", {
     systemWalletId: varchar("system_wallet_id", { length: 36 })
         .notNull()
         .references(() => systemWallet.id, { onDelete: "cascade" }),
-    currency: mysqlEnum("currency", [
-        "BTC",
-        "ETH",
-        "USDT",
-        "SOL",
-        "BNB",
-        "LTC",
-    ]).notNull(),
+    currency: currencyEnum('currency').notNull(),
     amount: varchar("amount", { length: 255 }).notNull(),
-    status: mysqlEnum("status", ["PENDING", "APPROVED", "REJECTED", "FAILED"])
-        .notNull()
-        .default("PENDING"),
-    // transactionHash: text("transaction_hash").notNull(),
+    status: statusEnum('status').notNull().default('PENDING'),
     rejectionReason: text("rejection_reason"),
     approvedAt: timestamp("approved_at"),
     rejectedAt: timestamp("rejected_at"),
@@ -302,25 +254,16 @@ export const depositRelations = relations(deposit, ({ one }) => ({
         references: [systemWallet.id],
     }),
 }));
-export const withdrawal = mysqlTable("withdrawal", {
+export const withdrawal = pgTable("withdrawal", {
     id: varchar("id", { length: 36 })
         .primaryKey()
         .$defaultFn(() => crypto.randomUUID()),
     userId: varchar("user_id", { length: 36 })
         .notNull()
         .references(() => user.id, { onDelete: "cascade" }),
-    currency: mysqlEnum("currency", [
-        "BTC",
-        "ETH",
-        "USDT",
-        "SOL",
-        "BNB",
-        "LTC",
-    ]).notNull(),
+    currency: currencyEnum('currency').notNull(),
     amount: varchar("amount", { length: 255 }).notNull(),
-    status: mysqlEnum("status", ["PENDING", "APPROVED", "REJECTED"])
-        .notNull()
-        .default("PENDING"),
+    status: statusEnum('status').notNull().default('PENDING'),
     destinationAddress: text("destination_address").notNull(),
     rejectionReason: text("rejection_reason"),
     approvedAt: timestamp("approved_at"),
@@ -334,7 +277,7 @@ export const withdrawalRelations = relations(withdrawal, ({ one }) => ({
         references: [user.id],
     }),
 }));
-export const transfer = mysqlTable("transfer", {
+export const transfer = pgTable("transfer", {
     id: varchar("id", { length: 36 })
         .primaryKey()
         .$defaultFn(() => crypto.randomUUID()),
@@ -344,27 +287,11 @@ export const transfer = mysqlTable("transfer", {
     recipientId: varchar("recipient_id", { length: 36 })
         .notNull()
         .references(() => user.id, { onDelete: "cascade" }),
-    fromCurrency: mysqlEnum("from_currency", [
-        "BTC",
-        "ETH",
-        "USDT",
-        "SOL",
-        "BNB",
-        "LTC",
-    ]).notNull(),
-    toCurrency: mysqlEnum("to_currency", [
-        "BTC",
-        "ETH",
-        "USDT",
-        "SOL",
-        "BNB",
-        "LTC",
-    ]).notNull(),
+    fromCurrency: currencyEnum('from_currency').notNull(),
+    toCurrency: currencyEnum('to_currency').notNull(),
     amount: varchar("amount", { length: 255 }).notNull(),
-    type: mysqlEnum("type", ["INTERNAL", "INTER_USER"]).notNull(),
-    status: mysqlEnum("status", ["PENDING", "APPROVED", "REJECTED"])
-        .notNull()
-        .default("PENDING"),
+    type: transferTypeEnum('type').notNull(),
+    status: statusEnum('status').notNull().default('PENDING'),
     rejectionReason: text("rejection_reason"),
     approvedAt: timestamp("approved_at"),
     rejectedAt: timestamp("rejected_at"),
@@ -395,7 +322,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
     referrals: many(referrals),
     investments: many(investments),
 }));
-export const productCategory = mysqlTable("product_category", {
+export const productCategory = pgTable("product_category", {
     id: varchar("id", { length: 36 })
         .primaryKey()
         .$defaultFn(() => crypto.randomUUID()),
@@ -403,7 +330,7 @@ export const productCategory = mysqlTable("product_category", {
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
 });
-export const product = mysqlTable("product", {
+export const product = pgTable("product", {
     id: varchar("id", { length: 36 })
         .primaryKey()
         .$defaultFn(() => crypto.randomUUID()),

@@ -1,103 +1,12 @@
 {
   "version": "7",
-  "dialect": "mysql",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1743110104284,
-      "tag": "0000_numerous_unicorn",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1743115958476,
-      "tag": "0001_fuzzy_namor",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1743116106346,
-      "tag": "0002_mysterious_tenebrous",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1743199518332,
-      "tag": "0003_bitter_plazm",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1743316295003,
-      "tag": "0004_new_vertigo",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1743335342999,
-      "tag": "0005_premium_lila_cheney",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "5",
-      "when": 1743372091926,
-      "tag": "0006_cold_texas_twister",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "5",
-      "when": 1743411636504,
-      "tag": "0007_curly_wind_dancer",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "5",
-      "when": 1743436662180,
-      "tag": "0008_lucky_khan",
-      "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "5",
-      "when": 1743559985418,
-      "tag": "0011_parallel_lady_vermin",
-      "breakpoints": true
-    },
-    {
-      "idx": 12,
-      "version": "5",
-      "when": 1743742350468,
-      "tag": "0012_perpetual_crusher_hogan",
-      "breakpoints": true
-    },
-    {
-      "idx": 13,
-      "version": "5",
-      "when": 1743783269254,
-      "tag": "0013_windy_stingray",
-      "breakpoints": true
-    },
-    {
-      "idx": 14,
-      "version": "5",
-      "when": 1743826824496,
-      "tag": "0014_known_siren",
-      "breakpoints": true
-    },
-    {
-      "idx": 15,
-      "version": "5",
-      "when": 1743832267564,
-      "tag": "0015_sloppy_stark_industries",
+      "version": "7",
+      "when": 1744063372716,
+      "tag": "0000_red_wasp",
       "breakpoints": true
     }
   ]

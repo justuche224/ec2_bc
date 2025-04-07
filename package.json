@@ -5,7 +5,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node out/index.js",
-      "postinstall": "npm i --save-dev @types/node @types/jest @types/supertest @types/nodemailer",
+    "postinstall": "npm i --save-dev @types/node @types/jest @types/supertest @types/nodemailer",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
@@ -24,6 +24,7 @@
     "hono": "^4.7.5",
     "mysql2": "^3.14.0",
     "nodemailer": "^6.10.0",
+    "postgres": "^3.4.5",
     "sharp": "^0.33.5",
     "uuid": "^11.1.0"
   },
