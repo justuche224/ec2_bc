@@ -1,0 +1,1 @@
+ALTER TABLE `user` MODIFY COLUMN `two_factor_enabled` boolean NOT NULL DEFAULT false;
