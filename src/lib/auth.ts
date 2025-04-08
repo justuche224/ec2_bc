@@ -8,11 +8,12 @@ export const auth = betterAuth({
     provider: "pg",
   }),
   rateLimit: {
-    enabled: true,
-    window: 60, // time window in seconds
-    max: 10, // max requests in the window
     customRules: {
-      "/forget-password": { window: 10, max: 2 },
+      "/forget-password": { window: 10, max: 3 },
+      "/sign-in/email": {
+        window: 10,
+        max: 3,
+      },
     },
   },
   emailAndPassword: {
