@@ -27,7 +27,7 @@ export class PlansService {
       ...data,
       createdAt: new Date(),
       updatedAt: new Date(),
-    });
+    }).returning();
 
     return { success: true, planId: newPlan[0].id };
   }

@@ -25,7 +25,7 @@ export class ProductService {
       name,
       createdAt: new Date(),
       updatedAt: new Date(),
-    });
+    }).returning();
 
     return { success: true, categoryId: newCategory[0].id };
   }
@@ -168,7 +168,7 @@ export class ProductService {
       img: filename,
       createdAt: new Date(),
       updatedAt: new Date(),
-    });
+    }).returning();
 
     return {
       success: true,
