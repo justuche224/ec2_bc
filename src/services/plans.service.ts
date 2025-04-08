@@ -1,7 +1,6 @@
 import db from "../db/index.js";
 import { plans } from "../db/schema.js";
 import { eq, inArray } from "drizzle-orm";
-import { v4 as uuidv4 } from "uuid";
 
 export class PlansService {
   private static instance: PlansService;
@@ -25,7 +24,6 @@ export class PlansService {
     description: string;
   }) {
     const newPlan = await db.insert(plans).values({
-      id: uuidv4(),
       ...data,
       createdAt: new Date(),
       updatedAt: new Date(),
