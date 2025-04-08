@@ -23,17 +23,16 @@ export const user = pgTable("user", {
 	email: text('email').notNull().unique(),
 	emailVerified: boolean('email_verified').notNull(),
 	image: text('image'),
-  normalizedEmail: text("normalized_email", { length: 255 }).unique(),
-  role: text('role'),
+	createdAt: timestamp('created_at').notNull(),
+	updatedAt: timestamp('updated_at').notNull(),
+	role: text('role'),
+	kyc_verified: boolean('kyc_verified'),
+
   phone: text("phone"),
   country: text("country"),
   address: text("address"),
   postalCode: text("postal_code"),
   dateOfBirth: timestamp("date_of_birth"),
-  twoFactorEnabled: boolean("two_factor_enabled").notNull().default(false),
-  kycVerified: boolean("kyc_verified").notNull().default(false),
-  createdAt: timestamp("created_at").notNull(),
-  updatedAt: timestamp("updated_at").notNull(),
 });
 
 export const referrals = pgTable("referrals", {

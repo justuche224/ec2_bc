@@ -1,7 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import db from "../db/index.js";
-// import { emailHarmony } from "better-auth-harmony";
 import { mailService } from "../services/mail.service.js";
 
 export const auth = betterAuth({
@@ -16,7 +15,6 @@ export const auth = betterAuth({
       "/forget-password": { window: 10, max: 2 },
     },
   },
-  // plugins: [emailHarmony()],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -45,8 +43,11 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: process.env.NODE_ENV === "production" ? [process.env.FRONTEND_URL] : ["http://localhost:5173", "http://localhost:3000", "https://ecohavest.org"],
+  trustedOrigins: process.env.NODE_ENV === "production" ? [process.env.FRONTEND_URL] : ["http://localhost:5173", "http://localhost:3000", "https://ecohavest.org",],
   logger: {
     level: "debug",
+    log(level, message, ...args) {
+      console.log(level, message, ...args);
+    },
   },
 });
