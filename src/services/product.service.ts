@@ -27,7 +27,7 @@ export class ProductService {
       updatedAt: new Date(),
     });
 
-    return { success: true, categoryId: newCategory[0].insertId };
+    return { success: true, categoryId: newCategory[0].id };
   }
 
   async updateCategory(categoryId: string, name: string) {
@@ -172,7 +172,7 @@ export class ProductService {
 
     return {
       success: true,
-      productId: newProduct[0].insertId,
+      productId: newProduct[0].id,
       imageUrl: `${process.env.BASE_URL}/api/products/image/${filename}`,
     };
   }

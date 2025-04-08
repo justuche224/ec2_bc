@@ -29,7 +29,7 @@ export class PlansService {
       updatedAt: new Date(),
     });
 
-    return { success: true, planId: newPlan[0].insertId };
+    return { success: true, planId: newPlan[0].id };
   }
 
   async updatePlan(
