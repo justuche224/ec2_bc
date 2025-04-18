@@ -17,6 +17,7 @@ import referralRouter from "./routes/referral.routes.js";
 import plansRouter from "./routes/plans.routes.js";
 import investmentRouter from "./routes/investment.routes.js";
 import transferRouter from "./routes/transfer.routes.js";
+import { mailService } from "./services/mail.service.js";
 export const app = new Hono<{
   Variables: {
     user: typeof auth.$Infer.Session.user | null;
@@ -50,6 +51,20 @@ app.on(["POST", "GET"], "/api/auth/*", (c) => {
 // Health check
 app.get("/", (c) => {
   return c.text("Hello Hono!");
+});
+
+app.post("/api/send-welcome-email", async (c) => { 
+  try {
+    const { email, firstName } = await c.req.json<{ email: string, firstName: string }>();
+    if (!email) {
+      return c.json({ error: "Email is required" }, 400);
+    }
+    await mailService.sendWelcomeEmail(email, firstName);
+    return c.json({ message: "Welcome email sent successfully." });
+  } catch (error) {
+    console.error("Failed to send welcome email:", error);
+    return c.json({ error: "Failed to send welcome email", details: error instanceof Error ? error.message : "Internal server error" }, 500);
+  }
 });
 
 // Start server
