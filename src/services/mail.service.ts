@@ -693,6 +693,133 @@ class MailService {
     const html = this.getBaseTemplate(content);
     return { text, html };
   }
+
+  /**
+   * Send welcome email
+   */
+  async sendWelcomeEmail(email: string, firstName: string): Promise<void> {
+    const subject = `Welcome to EcoHarvest, ${firstName}!`;
+    const { text, html } = this.getWelcomeEmailTemplate(firstName);
+
+    await this.sendMail({
+      to: email,
+      subject,
+      text,
+      html,
+    });
+  }
+
+  /**
+   * Get welcome email template
+   */
+  private getWelcomeEmailTemplate(firstName: string): {
+    text: string;
+    html: string;
+  } {
+    const dashboardUrl = `${process.env.FRONTEND_URL || "https://ecohavest.org"}/dashboard`;
+    const servicesUrl = `${process.env.FRONTEND_URL || "https://ecohavest.org"}/services`;
+    const contactUrl = `${process.env.FRONTEND_URL || "https://ecohavest.org"}/contact`;
+    const faqsUrl = `${process.env.FRONTEND_URL || "https://ecohavest.org"}/faqs`;
+    const aboutUrl = `${process.env.FRONTEND_URL || "https://ecohavest.org"}/about`;
+    const supportEmail = "support@ecohavest.org";
+    const websiteUrl = "https://ecohavest.org";
+    const logoUrl = "https://ecohavest.org/images/ecoharvest-logo-2-removebg-preview.png"; // Assuming this is the correct path
+
+    const text = `
+    Welcome to EcoHarvest, ${firstName}!
+
+    We're thrilled to have you join our community. Whether you're here to make good for the future or simply to explore, we're here to support you every step of the way.
+
+    Here's what you can do next:
+    - Complete your profile: ${dashboardUrl}
+    - Explore our features: ${servicesUrl}
+    - Get help or support: ${contactUrl}
+
+    Useful Links:
+    - FAQs: ${faqsUrl}
+    - About Us: ${aboutUrl}
+    
+    Useful Documents:
+    - Ecoharvest Lightpaper: ${websiteUrl}/docs/Lightpaper-ecoharvest.pdf
+    - Articles of Incorporation: ${websiteUrl}/docs/Articles%20of%20Incorporation%20ecoharvest.pdf
+    - Certificate of Incorporation: ${websiteUrl}/docs/Certificate%20of%20Incorporation%20ecoharvest.pdf
+    - LLC Registration: ${websiteUrl}/docs/ecoharvest-II-reg.pdf
+    - LLC Formation: ${websiteUrl}/docs/Certificate%20of%20Formation%20-%20Domestic%20Limited%20Liability%20Company%20ECOHARVEST%20Limited%20Liability%20Company.pdf
+    - Liability Insurance: ${websiteUrl}/docs/ecoharvest-usa-Acord%20certificate%20of%20insurance.pdf
+    - Ecoharvest EIN: ${websiteUrl}/docs/ecoharvest-ein.pdf
+    - Initial Return: ${websiteUrl}/docs/ON%20-%20Initial%20Return%20ecoharvest.pdf
+    - Extra Provincial Registration: ${websiteUrl}/docs/ON%20-%20Extra%20Provincial%20Registration%20ecoharvest.pdf
+    - Corporation Information Sheet: ${websiteUrl}/docs/Information%20Sheet%20ecoharvest.pdf
+    - Ecoharvest Business Plan: ${websiteUrl}/docs/ecoharvest-business-plan.pdf
+
+    If you have any questions or need assistance, don't hesitate to reach out to our support team at ${supportEmail} or visit our contact page: ${contactUrl}
+
+    Thank you for choosing EcoHarvest. We're excited to have you on board!
+
+    Best regards,
+    The EcoHarvest Team
+    WhatsApp: https://wa.me/+447904016379
+    Website: ${websiteUrl}
+    `;
+
+    const content = `
+    <div class="content">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <img src="${logoUrl}" alt="EcoHarvest Logo" style="max-height: 80px;">
+      </div>
+    
+      <h2>Welcome to EcoHarvest, ${firstName}! 🎉</h2>
+      
+      <p>We're thrilled to have you join our community. Whether you're here to make good for the future or simply to explore, we're here to support you every step of the way.</p>
+      
+      <h3 style="margin-top: 32px; margin-bottom: 16px; font-weight: 600; font-size: 18px;">Here's what you can do next:</h3>
+      <ul style="list-style: none; padding-left: 0; margin-bottom: 24px;">
+        <li style="margin-bottom: 12px;"><strong>Complete your profile:</strong> <a href="${dashboardUrl}" style="color: #16a34a; text-decoration: none;">Dashboard</a></li>
+        <li style="margin-bottom: 12px;"><strong>Explore our features:</strong> <a href="${servicesUrl}" style="color: #16a34a; text-decoration: none;">Services</a></li>
+        <li style="margin-bottom: 12px;"><strong>Get help or support:</strong> <a href="${contactUrl}" style="color: #16a34a; text-decoration: none;">Contact</a></li>
+      </ul>
+      
+      <div class="info-box" style="margin-top: 32px;">
+        <h4 style="margin-top: 0; margin-bottom: 12px; font-weight: 600;">Useful Links:</h4>
+        <ul style="list-style: none; padding-left: 0; margin: 0;">
+          <li style="margin-bottom: 8px;"><a href="${faqsUrl}" style="color: #16a34a; text-decoration: none;">FAQs</a></li>
+          <li style="margin-bottom: 8px;"><a href="${aboutUrl}" style="color: #16a34a; text-decoration: none;">About Us</a></li>
+        </ul>
+      </div>
+
+      <div class="info-box" style="margin-top: 24px; background-color: #eef2ff; border-left-color: #4f46e5;">
+        <h4 style="margin-top: 0; margin-bottom: 12px; font-weight: 600; color: #3730a3;">Useful Documents:</h4>
+        <ul style="list-style: none; padding-left: 0; margin: 0; font-size: 14px;">
+          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Lightpaper-ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest Lightpaper</a></li>
+          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Articles%20of%20Incorporation%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Articles of Incorporation</a></li>
+          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Certificate%20of%20Incorporation%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Certificate of Incorporation</a></li>
+          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ecoharvest-II-reg.pdf" style="color: #4f46e5; text-decoration: none;">LLC Registration</a></li>
+          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Certificate%20of%20Formation%20-%20Domestic%20Limited%20Liability%20Company%20ECOHARVEST%20Limited%20Liability%20Company.pdf" style="color: #4f46e5; text-decoration: none;">LLC Formation</a></li>
+          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ecoharvest-usa-Acord%20certificate%20of%20insurance.pdf" style="color: #4f46e5; text-decoration: none;">Liability Insurance</a></li>
+          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ecoharvest-ein.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest EIN</a></li>
+          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ON%20-%20Initial%20Return%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Initial Return</a></li>
+          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ON%20-%20Extra%20Provincial%20Registration%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Extra Provincial Registration</a></li>
+          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Information%20Sheet%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Corporation Information Sheet</a></li>
+          <li><a href="${websiteUrl}/docs/ecoharvest-business-plan.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest Business Plan</a></li>
+        </ul>
+      </div>
+      
+      <p style="margin-top: 32px;">If you have any questions or need assistance, don't hesitate to reach out to our support team at <a href="mailto:${supportEmail}" style="color: #16a34a; text-decoration: none;">${supportEmail}</a> or visit our <a href="${contactUrl}" style="color: #16a34a; text-decoration: none;">contact page</a>.</p>
+      
+      <p>Thank you for choosing EcoHarvest. We're excited to have you on board!</p>
+      
+      <p style="margin-top: 24px;">Best regards,<br>The EcoHarvest Team</p>
+      
+      <p style="font-size: 14px; color: #64748b;">
+        <a href="https://wa.me/+447904016379" style="color: #64748b; text-decoration: none;">WhatsApp</a> | 
+        <a href="${websiteUrl}" style="color: #64748b; text-decoration: none;">Website</a>
+      </p>
+    </div>
+    `;
+
+    const html = this.getBaseTemplate(content);
+    return { text, html };
+  }
 }
 
 // Export a singleton instance

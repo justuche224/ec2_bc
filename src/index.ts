@@ -5,6 +5,7 @@ import { logger } from "hono/logger";
 import { ensureDirectories } from "./utils/ensureDirectories.js";
 import { auth } from "./lib/auth.js";
 import { config } from "./config/index.js";
+import { mailService } from "./services/mail.service.js";
 import kycRouter from "./routes/kyc.routes.js";
 import walletRouter from "./routes/wallet.routes.js";
 import userRouter from "./routes/user.routes.js";
@@ -45,6 +46,24 @@ app.route("/api/transfers", transferRouter);
 // Auth routes
 app.on(["POST", "GET"], "/api/auth/*", (c) => {
   return auth.handler(c.req.raw);
+});
+
+// Route to send welcome email (no auth required)
+app.post("/api/send-welcome-email", async (c) => {
+  try {
+    const { email } = await c.req.json<{ email: string }>();
+    if (!email) {
+      return c.json({ error: "Email is required" }, 400);
+    }
+    // Using a placeholder for first name as it's not provided in the request
+    await mailService.sendWelcomeEmail(email, "User");
+    return c.json({ message: "Welcome email sent successfully." });
+  } catch (error) {
+    console.error("Failed to send welcome email:", error);
+    // Check if error is an instance of Error to safely access message
+    const errorMessage = error instanceof Error ? error.message : "Internal server error";
+    return c.json({ error: "Failed to send welcome email", details: errorMessage }, 500);
+  }
 });
 
 // Health check
