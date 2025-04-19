@@ -270,8 +270,7 @@ class MailService {
     <body>
       <div class="container">
         <div class="header">
-          <!-- Replace with actual logo URL -->
-          <img src="https://ecohavest.org/logo.png" alt="EcoHarvest" class="logo" onerror="this.style.display='none'">
+          <img src="https://ecohavest.org/images/ecoharvest-logo-2-removebg-preview.png" alt="EcoHarvest" class="logo" onerror="this.style.display='none'">
           <h1>EcoHarvest</h1>
         </div>
         
@@ -723,7 +722,7 @@ class MailService {
     const aboutUrl = `${process.env.FRONTEND_URL || "https://ecohavest.org"}/about`;
     const supportEmail = "support@ecohavest.org";
     const websiteUrl = "https://ecohavest.org";
-    const logoUrl = "https://ecohavest.org/images/ecoharvest-logo-2-removebg-preview.png"; // Assuming this is the correct path
+    const logoUrl = "https://ecohavest.org/images/ecoharvest-logo-2-removebg-preview.png";
 
     const text = `
     Welcome to EcoHarvest, ${firstName}!
