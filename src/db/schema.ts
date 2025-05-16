@@ -27,6 +27,7 @@ export const user = pgTable("user", {
 	updatedAt: timestamp('updated_at').notNull(),
 	role: text('role'),
 	kyc_verified: boolean('kyc_verified'),
+  is_npo: boolean("is_npo"),
 
   phone: text("phone"),
   country: text("country"),

@@ -42,6 +42,10 @@ export const auth = betterAuth({
         type: "boolean",
         default: false,
       },
+      is_npo: {
+        type: "boolean",
+        default: false,
+      },
     },
   },
   advanced: {
@@ -50,9 +54,16 @@ export const auth = betterAuth({
       httpOnly: true,
       sameSite: "none",
       domain: ".ecohavest.org",
+    },
   },
-  },
-  trustedOrigins: process.env.NODE_ENV === "production" ? [process.env.FRONTEND_URL] : ["http://localhost:5173", "http://localhost:3000", "https://ecohavest.org",],
+  trustedOrigins:
+    process.env.NODE_ENV === "production"
+      ? [process.env.FRONTEND_URL]
+      : [
+          "http://localhost:5173",
+          "http://localhost:3000",
+          "https://ecohavest.org",
+        ],
   logger: {
     level: "debug",
     log(level, message, ...args) {
