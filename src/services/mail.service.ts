@@ -784,17 +784,18 @@ class MailService {
     - About Us: ${aboutUrl}
     
     Useful Documents:
-    - Ecoharvest Lightpaper: ${websiteUrl}/docs/Lightpaper-ecoharvest.pdf
-    - Articles of Incorporation: ${websiteUrl}/docs/Articles%20of%20Incorporation%20ecoharvest.pdf
-    - Certificate of Incorporation: ${websiteUrl}/docs/Certificate%20of%20Incorporation%20ecoharvest.pdf
-    - LLC Registration: ${websiteUrl}/docs/ecoharvest-II-reg.pdf
-    - LLC Formation: ${websiteUrl}/docs/Certificate%20of%20Formation%20-%20Domestic%20Limited%20Liability%20Company%20ECOHARVEST%20Limited%20Liability%20Company.pdf
-    - Liability Insurance: ${websiteUrl}/docs/ecoharvest-usa-Acord%20certificate%20of%20insurance.pdf
-    - Ecoharvest EIN: ${websiteUrl}/docs/ecoharvest-ein.pdf
-    - Initial Return: ${websiteUrl}/docs/ON%20-%20Initial%20Return%20ecoharvest.pdf
-    - Extra Provincial Registration: ${websiteUrl}/docs/ON%20-%20Extra%20Provincial%20Registration%20ecoharvest.pdf
-    - Corporation Information Sheet: ${websiteUrl}/docs/Information%20Sheet%20ecoharvest.pdf
-    - Ecoharvest Business Plan: ${websiteUrl}/docs/ecoharvest-business-plan.pdf
+    - Ecoharvest Lightpaper: https://files.ecohavest.org/Ecoharvest%20Light%20Paper_2025.pdf
+    - Ecoharvest Business Plan: https://files.ecohavest.org/Ecoharvest-Business-Plan_2025.pdf
+    - Ecotoken: https://files.ecohavest.org/Ecotoken.pdf
+    - Articles of Incorporation: https://files.ecohavest.org/Articles%20of%20Incorporation%20ecoharvest.pdf
+    - Certificate of Incorporation: https://files.ecohavest.org/Certificate%20of%20Incorporation%20ecoharvest.pdf
+    - LLC Registration: https://files.ecohavest.org/ecoharvest-ll-reg.pdf
+    - LLC Formation: https://files.ecohavest.org/Certificate%20of%20Formation%20-%20Domestic%20Limited%20Liability%20Company%20ECOHARVEST%20Limited%20Liability%20Company.pdf
+    - Liability Insurance: https://files.ecohavest.org/ecoharvest-usa-Acord%20certificate%20of%20insurance.pdf
+    - Ecoharvest EIN: https://files.ecohavest.org/ecoharvest-ein.pdf
+    - Initial Return: https://files.ecohavest.org/ON%20-%20Initial%20Return%20ecoharvest.pdf
+    - Extra Provincial Registration: https://files.ecohavest.org/ON%20-%20Extra%20Provincial%20Registration%20ecoharvest.pdf
+    - Corporation Information Sheet: https://files.ecohavest.org/Information%20Sheet%20ecoharvest.pdf
 
     If you have any questions or need assistance, don't hesitate to reach out to our support team at ${supportEmail} or visit our contact page: ${contactUrl}
 
@@ -834,18 +835,18 @@ class MailService {
       <div class="info-box" style="margin-top: 24px; background-color: #eef2ff; border-left-color: #4f46e5;">
         <h4 style="margin-top: 0; margin-bottom: 12px; font-weight: 600; color: #3730a3;">Useful Documents:</h4>
         <ul style="list-style: none; padding-left: 0; margin: 0; font-size: 14px;">
-          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Ecoharvest Light Paper_2025.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest Lightpaper 2025</a></li>
-          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Ecotoken.pdf" style="color: #4f46e5; text-decoration: none;">Ecotoken</a></li>
-          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Ecoharvest-Business-Plan_2025.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest Business Plan 2025</a></li>
-          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Articles%20of%20Incorporation%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Articles of Incorporation</a></li>
-          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Certificate%20of%20Incorporation%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Certificate of Incorporation</a></li>
-          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ecoharvest-II-reg.pdf" style="color: #4f46e5; text-decoration: none;">LLC Registration</a></li>
-          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Certificate%20of%20Formation%20-%20Domestic%20Limited%20Liability%20Company%20ECOHARVEST%20Limited%20Liability%20Company.pdf" style="color: #4f46e5; text-decoration: none;">LLC Formation</a></li>
-          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ecoharvest-usa-Acord%20certificate%20of%20insurance.pdf" style="color: #4f46e5; text-decoration: none;">Liability Insurance</a></li>
-          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ecoharvest-ein.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest EIN</a></li>
-          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ON%20-%20Initial%20Return%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Initial Return</a></li>
-          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ON%20-%20Extra%20Provincial%20Registration%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Extra Provincial Registration</a></li>
-          <li><a href="${websiteUrl}/docs/Information%20Sheet%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Corporation Information Sheet</a></li>
+          <li style="margin-bottom: 6px;"><a href="https://files.ecohavest.org/Ecoharvest%20Light%20Paper_2025.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest Lightpaper 2025</a></li>
+          <li style="margin-bottom: 6px;"><a href="https://files.ecohavest.org/Ecotoken.pdf" style="color: #4f46e5; text-decoration: none;">Ecotoken</a></li>
+          <li style="margin-bottom: 6px;"><a href="https://files.ecohavest.org/Ecoharvest-Business-Plan_2025.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest Business Plan 2025</a></li>
+          <li style="margin-bottom: 6px;"><a href="https://files.ecohavest.org/Articles%20of%20Incorporation%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Articles of Incorporation</a></li>
+          <li style="margin-bottom: 6px;"><a href="https://files.ecohavest.org/Certificate%20of%20Incorporation%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Certificate of Incorporation</a></li>
+          <li style="margin-bottom: 6px;"><a href="https://files.ecohavest.org/ecoharvest-ll-reg.pdf" style="color: #4f46e5; text-decoration: none;">LLC Registration</a></li>
+          <li style="margin-bottom: 6px;"><a href="$https://files.ecohavest.org/Certificate%20of%20Formation%20-%20Domestic%20Limited%20Liability%20Company%20ECOHARVEST%20Limited%20Liability%20Company.pdf" style="color: #4f46e5; text-decoration: none;">LLC Formation</a></li>
+          <li style="margin-bottom: 6px;"><a href="https://files.ecohavest.org/ecoharvest-usa-Acord%20certificate%20of%20insurance.pdf" style="color: #4f46e5; text-decoration: none;">Liability Insurance</a></li>
+          <li style="margin-bottom: 6px;"><a href="https://files.ecohavest.org/ecoharvest-ein.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest EIN</a></li>
+          <li style="margin-bottom: 6px;"><a href="https://files.ecohavest.org/ON%20-%20Initial%20Return%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Initial Return</a></li>
+          <li style="margin-bottom: 6px;"><a href="https://files.ecohavest.org/ON%20-%20Extra%20Provincial%20Registration%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Extra Provincial Registration</a></li>
+          <li><a href="https://files.ecohavest.org/Information%20Sheet%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Corporation Information Sheet</a></li>
         </ul>
       </div>
       
