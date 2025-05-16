@@ -469,7 +469,8 @@ class MailService {
       statusMessage =
         "Your deposit is being processed and will be credited to your account once confirmed.";
       buttonText = "Track Deposit";
-      additionalInfo = "Deposits typically take 10-30 minutes to confirm, depending on network conditions.";
+      additionalInfo =
+        "Deposits typically take 10-30 minutes to confirm, depending on network conditions.";
     } else if (status === "APPROVED") {
       statusMessage =
         "Your deposit has been approved and credited to your account. You can now use these funds for investments.";
@@ -478,12 +479,14 @@ class MailService {
       statusMessage =
         "Unfortunately, your deposit has been rejected. This may be due to compliance issues or transaction errors.";
       buttonText = "Contact Support";
-      additionalInfo = "Our support team is ready to assist you in resolving this issue.";
+      additionalInfo =
+        "Our support team is ready to assist you in resolving this issue.";
     } else if (status === "FAILED") {
       statusMessage =
         "Your deposit transaction has failed. This could be due to network issues or insufficient funds.";
       buttonText = "Try Again";
-      additionalInfo = "If you continue experiencing issues, please contact our support team.";
+      additionalInfo =
+        "If you continue experiencing issues, please contact our support team.";
     }
 
     const text = `
@@ -499,10 +502,12 @@ class MailService {
     Visit our website to view your deposit details: ${buttonUrl}
     `;
 
-    const statusClass = 
-      status === "APPROVED" ? "status-approved" :
-      status === "PENDING" ? "status-pending" :
-      "status-rejected";
+    const statusClass =
+      status === "APPROVED"
+        ? "status-approved"
+        : status === "PENDING"
+        ? "status-pending"
+        : "status-rejected";
 
     const content = `
     <div class="content">
@@ -516,7 +521,11 @@ class MailService {
       
       <p>${statusMessage}</p>
       
-      ${additionalInfo ? `<div class="info-box"><p>${additionalInfo}</p></div>` : ''}
+      ${
+        additionalInfo
+          ? `<div class="info-box"><p>${additionalInfo}</p></div>`
+          : ""
+      }
       
       <div style="text-align: center;">
         <a href="${buttonUrl}" class="button">${buttonText}</a>
@@ -547,12 +556,14 @@ class MailService {
     if (status === "PENDING") {
       statusMessage = "Your withdrawal request is being processed by our team.";
       buttonText = "Track Withdrawal";
-      additionalInfo = "Withdrawal requests are typically processed within 24 hours.";
+      additionalInfo =
+        "Withdrawal requests are typically processed within 24 hours.";
     } else if (status === "APPROVED") {
       statusMessage =
         "Your withdrawal has been approved and funds are being sent to your wallet.";
       buttonText = "View Transaction";
-      additionalInfo = "The funds should arrive in your wallet shortly, depending on network congestion.";
+      additionalInfo =
+        "The funds should arrive in your wallet shortly, depending on network congestion.";
     } else if (status === "REJECTED") {
       statusMessage = "Your withdrawal request has been rejected.";
       buttonText = "Contact Support";
@@ -572,10 +583,12 @@ class MailService {
     Visit our website to view your withdrawal details: ${buttonUrl}
     `;
 
-    const statusClass = 
-      status === "APPROVED" ? "status-approved" :
-      status === "PENDING" ? "status-pending" :
-      "status-rejected";
+    const statusClass =
+      status === "APPROVED"
+        ? "status-approved"
+        : status === "PENDING"
+        ? "status-pending"
+        : "status-rejected";
 
     const content = `
     <div class="content">
@@ -589,13 +602,21 @@ class MailService {
       
       <p>${statusMessage}</p>
       
-      ${rejectionReason ? `
+      ${
+        rejectionReason
+          ? `
       <div class="alert-box">
         <p><strong>Reason for rejection:</strong> ${rejectionReason}</p>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
       
-      ${additionalInfo ? `<div class="info-box"><p>${additionalInfo}</p></div>` : ''}
+      ${
+        additionalInfo
+          ? `<div class="info-box"><p>${additionalInfo}</p></div>`
+          : ""
+      }
       
       <div style="text-align: center;">
         <a href="${buttonUrl}" class="button">${buttonText}</a>
@@ -626,11 +647,13 @@ class MailService {
     if (status === "ACTIVE") {
       statusMessage = `Your ${planType} investment has been activated and is now generating returns.`;
       buttonText = "View Investment";
-      additionalInfo = "You can track your investment performance and returns in real-time from your dashboard.";
+      additionalInfo =
+        "You can track your investment performance and returns in real-time from your dashboard.";
     } else if (status === "COMPLETED") {
       statusMessage = `Your ${planType} investment has successfully completed its term. All returns have been credited to your account.`;
       buttonText = "View Returns";
-      additionalInfo = "Thank you for investing with EcoHarvest. We hope you'll consider reinvesting with us.";
+      additionalInfo =
+        "Thank you for investing with EcoHarvest. We hope you'll consider reinvesting with us.";
     } else if (status === "CANCELLED") {
       statusMessage = `Your ${planType} investment has been cancelled.`;
       buttonText = "Contact Support";
@@ -653,11 +676,14 @@ class MailService {
     Visit our website to view your investment details: ${buttonUrl}
     `;
 
-    const statusClass = 
-      status === "ACTIVE" ? "status-approved" :
-      status === "PENDING" ? "status-pending" :
-      status === "COMPLETED" ? "status-completed" :
-      "status-cancelled";
+    const statusClass =
+      status === "ACTIVE"
+        ? "status-approved"
+        : status === "PENDING"
+        ? "status-pending"
+        : status === "COMPLETED"
+        ? "status-completed"
+        : "status-cancelled";
 
     const content = `
     <div class="content">
@@ -672,18 +698,26 @@ class MailService {
       
       <p>${statusMessage}</p>
       
-      ${additionalInfo ? `<div class="info-box"><p>${additionalInfo}</p></div>` : ''}
+      ${
+        additionalInfo
+          ? `<div class="info-box"><p>${additionalInfo}</p></div>`
+          : ""
+      }
       
       <div style="text-align: center;">
         <a href="${buttonUrl}" class="button">${buttonText}</a>
       </div>
       
-      ${status === "COMPLETED" ? `
+      ${
+        status === "COMPLETED"
+          ? `
       <div style="margin-top: 24px; text-align: center; padding: 16px; background-color: #f0fdf4; border-radius: 8px;">
         <p style="font-weight: 600; margin-bottom: 8px;">Ready to grow your investments further?</p>
         <a href="${process.env.FRONTEND_URL}/investments" style="color: #16a34a; font-weight: 600;">Explore more investment plans →</a>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
       
       <p>For any questions about your investment, please contact our investment advisors at <a href="mailto:investments@ecohavest.org">investments@ecohavest.org</a></p>
     </div>
@@ -715,14 +749,25 @@ class MailService {
     text: string;
     html: string;
   } {
-    const dashboardUrl = `${process.env.FRONTEND_URL || "https://ecohavest.org"}/dashboard`;
-    const servicesUrl = `${process.env.FRONTEND_URL || "https://ecohavest.org"}/services`;
-    const contactUrl = `${process.env.FRONTEND_URL || "https://ecohavest.org"}/contact`;
-    const faqsUrl = `${process.env.FRONTEND_URL || "https://ecohavest.org"}/faqs`;
-    const aboutUrl = `${process.env.FRONTEND_URL || "https://ecohavest.org"}/about`;
+    const dashboardUrl = `${
+      process.env.FRONTEND_URL || "https://ecohavest.org"
+    }/dashboard`;
+    const servicesUrl = `${
+      process.env.FRONTEND_URL || "https://ecohavest.org"
+    }/services`;
+    const contactUrl = `${
+      process.env.FRONTEND_URL || "https://ecohavest.org"
+    }/contact`;
+    const faqsUrl = `${
+      process.env.FRONTEND_URL || "https://ecohavest.org"
+    }/faqs`;
+    const aboutUrl = `${
+      process.env.FRONTEND_URL || "https://ecohavest.org"
+    }/about`;
     const supportEmail = "support@ecohavest.org";
     const websiteUrl = "https://ecohavest.org";
-    const logoUrl = "https://ecohavest.org/images/ecoharvest-logo-2-removebg-preview.png";
+    const logoUrl =
+      "https://ecohavest.org/images/ecoharvest-logo-2-removebg-preview.png";
 
     const text = `
     Welcome to EcoHarvest, ${firstName}!
@@ -789,7 +834,9 @@ class MailService {
       <div class="info-box" style="margin-top: 24px; background-color: #eef2ff; border-left-color: #4f46e5;">
         <h4 style="margin-top: 0; margin-bottom: 12px; font-weight: 600; color: #3730a3;">Useful Documents:</h4>
         <ul style="list-style: none; padding-left: 0; margin: 0; font-size: 14px;">
-          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Lightpaper-ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest Lightpaper</a></li>
+          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Ecoharvest Light Paper_2025.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest Lightpaper 2025</a></li>
+          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Ecotoken.pdf" style="color: #4f46e5; text-decoration: none;">Ecotoken</a></li>
+          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Ecoharvest-Business-Plan_2025.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest Business Plan 2025</a></li>
           <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Articles%20of%20Incorporation%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Articles of Incorporation</a></li>
           <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Certificate%20of%20Incorporation%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Certificate of Incorporation</a></li>
           <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ecoharvest-II-reg.pdf" style="color: #4f46e5; text-decoration: none;">LLC Registration</a></li>
@@ -798,8 +845,7 @@ class MailService {
           <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ecoharvest-ein.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest EIN</a></li>
           <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ON%20-%20Initial%20Return%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Initial Return</a></li>
           <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/ON%20-%20Extra%20Provincial%20Registration%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Extra Provincial Registration</a></li>
-          <li style="margin-bottom: 6px;"><a href="${websiteUrl}/docs/Information%20Sheet%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Corporation Information Sheet</a></li>
-          <li><a href="${websiteUrl}/docs/ecoharvest-business-plan.pdf" style="color: #4f46e5; text-decoration: none;">Ecoharvest Business Plan</a></li>
+          <li><a href="${websiteUrl}/docs/Information%20Sheet%20ecoharvest.pdf" style="color: #4f46e5; text-decoration: none;">Corporation Information Sheet</a></li>
         </ul>
       </div>
       
