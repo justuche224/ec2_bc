@@ -44,9 +44,11 @@ class MailService {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(`Failed to send email: ${error.message}`);
+        console.error(`Failed to send email: ${error.message}`);
+        return;
       }
-      throw new Error("Failed to send email");
+      console.error("Failed to send email");
+      return;
     }
   }
 
@@ -358,6 +360,46 @@ class MailService {
 
     const html = this.getBaseTemplate(content);
     return { text, html };
+  }
+
+  /**
+   * Send cashapp deposit instructions email
+   */
+  async sendCashappDepositInstructions(
+    email: string,
+    amount: string,
+    cashtag: string,
+    cashappName: string,
+    depositId: string
+  ): Promise<void> {
+    const subject = "Cashapp Deposit Instructions";
+    const content = `
+    <div class="content">
+      <h2>Cashapp Deposit Instructions</h2>
+      <p>To deposit ${amount} to your EcoHarvest account, please follow these steps:</p>
+      <ol>
+        <li>Open Cashapp and tap the + button in the top right corner.</li>
+        <li>Select "Pay" and then "Pay Cash" or "Pay Cash Tag".</li>
+        <li>Enter the amount ${amount} and the cash tag $ecohavest.</li>
+        <li>Enter the name EcoHarvest as the recipient.</li>
+        <li>Tap "Pay" to complete the transaction.</li>
+      </ol>
+      <div>
+        <p>After sending the payment, please upload the proof of payment (image or screenshot) below to confirm your deposit.</p>
+        <a href="${process.env.FRONTEND_URL}/dashboard/deposit/cash-app/${depositId}">Upload Proof of Payment</a>
+      </div>
+      <p>Please ensure the transaction is sent to the correct cash tag and recipient. Once the deposit is confirmed, your account will be credited with the funds.</p>
+      <p>If you have any questions, please contact our support team at <a href="mailto:support@ecohavest.org">support@ecohavest.org</a></p>
+    </div>
+    `;
+
+    const html = this.getBaseTemplate(content);
+    await this.sendMail({
+      to: email,
+      subject,
+      text: "Cashapp Deposit Instructions",
+      html,
+    });
   }
 
   /**

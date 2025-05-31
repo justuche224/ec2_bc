@@ -11,22 +11,46 @@ import {
 } from "drizzle-orm/pg-core";
 
 // Define enums first
-export const roleEnum = pgEnum('role', ['ADMIN', 'USER']);
-export const documentTypeEnum = pgEnum('document_type', ['ID_CARD', 'DRIVERS_LICENSE', 'PASSPORT', 'OTHER']);
-export const statusEnum = pgEnum('status', ['PENDING', 'APPROVED', 'REJECTED', 'FAILED', 'ACTIVE', 'COMPLETED', 'CANCELLED']);
-export const currencyEnum = pgEnum('currency', ['BTC', 'ETH', 'USDT', 'SOL', 'BNB', 'LTC']);
-export const transferTypeEnum = pgEnum('transfer_type', ['INTERNAL', 'INTER_USER']);
+export const roleEnum = pgEnum("role", ["ADMIN", "USER"]);
+export const documentTypeEnum = pgEnum("document_type", [
+  "ID_CARD",
+  "DRIVERS_LICENSE",
+  "PASSPORT",
+  "OTHER",
+]);
+export const statusEnum = pgEnum("status", [
+  "PENDING",
+  "PROCESSING",
+  "APPROVED",
+  "REJECTED",
+  "FAILED",
+  "ACTIVE",
+  "COMPLETED",
+  "CANCELLED",
+]);
+export const currencyEnum = pgEnum("currency", [
+  "BTC",
+  "ETH",
+  "USDT",
+  "SOL",
+  "BNB",
+  "LTC",
+]);
+export const transferTypeEnum = pgEnum("transfer_type", [
+  "INTERNAL",
+  "INTER_USER",
+]);
 
 export const user = pgTable("user", {
-	id: text("id").primaryKey(),
-	name: text('name').notNull(),
-	email: text('email').notNull().unique(),
-	emailVerified: boolean('email_verified').notNull(),
-	image: text('image'),
-	createdAt: timestamp('created_at').notNull(),
-	updatedAt: timestamp('updated_at').notNull(),
-	role: text('role'),
-	kyc_verified: boolean('kyc_verified'),
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: boolean("email_verified").notNull(),
+  image: text("image"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+  role: text("role"),
+  kyc_verified: boolean("kyc_verified"),
   is_npo: boolean("is_npo"),
 
   phone: text("phone"),
@@ -49,43 +73,45 @@ export const referrals = pgTable("referrals", {
   createdAt: timestamp("created_at").notNull(),
 });
 
-
 export const session = pgTable("session", {
-	id: text("id").primaryKey(),
-	expiresAt: timestamp('expires_at').notNull(),
-	token: text('token').notNull().unique(),
-	createdAt: timestamp('created_at').notNull(),
-	updatedAt: timestamp('updated_at').notNull(),
-	ipAddress: text('ip_address'),
-	userAgent: text('user_agent'),
-	userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' })
+  id: text("id").primaryKey(),
+  expiresAt: timestamp("expires_at").notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
 });
 
 export const account = pgTable("account", {
-	id: text("id").primaryKey(),
-	accountId: text('account_id').notNull(),
-	providerId: text('provider_id').notNull(),
-	userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
-	accessToken: text('access_token'),
-	refreshToken: text('refresh_token'),
-	idToken: text('id_token'),
-	accessTokenExpiresAt: timestamp('access_token_expires_at'),
-	refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
-	scope: text('scope'),
-	password: text('password'),
-	createdAt: timestamp('created_at').notNull(),
-	updatedAt: timestamp('updated_at').notNull()
+  id: text("id").primaryKey(),
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 export const verification = pgTable("verification", {
-	id: text("id").primaryKey(),
-	identifier: text('identifier').notNull(),
-	value: text('value').notNull(),
-	expiresAt: timestamp('expires_at').notNull(),
-	createdAt: timestamp('created_at'),
-	updatedAt: timestamp('updated_at')
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at"),
+  updatedAt: timestamp("updated_at"),
 });
-
 
 export const kyc = pgTable("kyc", {
   id: varchar("id", { length: 36 })
@@ -94,11 +120,11 @@ export const kyc = pgTable("kyc", {
   userId: varchar("user_id", { length: 36 })
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  documentType: documentTypeEnum('document_type').notNull(),
+  documentType: documentTypeEnum("document_type").notNull(),
   frontImage: text("front_image").notNull(),
   backImage: text("back_image").notNull(),
   selfieImage: text("selfie_image").notNull(),
-  status: statusEnum('status').notNull().default('PENDING'),
+  status: statusEnum("status").notNull().default("PENDING"),
   rejectionReason: text("rejection_reason"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
@@ -111,7 +137,7 @@ export const wallet = pgTable("wallet", {
   userId: varchar("user_id", { length: 36 })
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  currency: currencyEnum('currency').notNull(),
+  currency: currencyEnum("currency").notNull(),
   address: text("address").notNull(),
   qrCode: text("qr_code").notNull(),
   createdAt: timestamp("created_at").notNull(),
@@ -136,7 +162,7 @@ export const systemWallet = pgTable("system_wallet", {
   id: varchar("id", { length: 36 })
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  currency: currencyEnum('currency').notNull(),
+  currency: currencyEnum("currency").notNull(),
   address: text("address").notNull(),
   qrCode: text("qr_code").notNull(),
   isActive: boolean("is_active").notNull().default(true),
@@ -151,7 +177,7 @@ export const userWallet = pgTable("user_wallet", {
   userId: varchar("user_id", { length: 36 })
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  currency: currencyEnum('currency').notNull(),
+  currency: currencyEnum("currency").notNull(),
   address: text("address").notNull(),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
@@ -183,12 +209,12 @@ export const investments = pgTable("investments", {
   planId: varchar("plan_id", { length: 36 })
     .notNull()
     .references(() => plans.id, { onDelete: "cascade" }),
-  currency: currencyEnum('currency').notNull(),
+  currency: currencyEnum("currency").notNull(),
   txn: varchar("txn", { length: 255 }).notNull(),
   amount: doublePrecision("amount").notNull(),
   targetProfit: doublePrecision("target_profit").notNull(),
   currentProfit: doublePrecision("current_profit").notNull(),
-  status: statusEnum('status').notNull().default('PENDING'),
+  status: statusEnum("status").notNull().default("PENDING"),
   noOfROI: integer("no_of_roi").notNull(),
   profitPercent: doublePrecision("profit_percent").notNull(),
   nextProfit: doublePrecision("next_profit").notNull(),
@@ -232,7 +258,7 @@ export const balance = pgTable("balance", {
   userId: varchar("user_id", { length: 36 })
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  currency: currencyEnum('currency').notNull(),
+  currency: currencyEnum("currency").notNull(),
   amount: varchar("amount", { length: 255 }).notNull().default("0"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
@@ -248,9 +274,28 @@ export const deposit = pgTable("deposit", {
   systemWalletId: varchar("system_wallet_id", { length: 36 })
     .notNull()
     .references(() => systemWallet.id, { onDelete: "cascade" }),
-  currency: currencyEnum('currency').notNull(),
+  currency: currencyEnum("currency").notNull(),
   amount: varchar("amount", { length: 255 }).notNull(),
-  status: statusEnum('status').notNull().default('PENDING'),
+  status: statusEnum("status").notNull().default("PENDING"),
+  rejectionReason: text("rejection_reason"),
+  approvedAt: timestamp("approved_at"),
+  rejectedAt: timestamp("rejected_at"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const cashapp = pgTable("cashapp", {
+  id: varchar("id", { length: 36 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id", { length: 36 })
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  amount: varchar("amount", { length: 255 }).notNull(),
+  cashtag:  text("cashtag").notNull(),
+  cashappName: text("cashapp_name").notNull(),
+  paymentProof: text("payment_proof"),
+  status: statusEnum("status").notNull().default("PENDING"),
   rejectionReason: text("rejection_reason"),
   approvedAt: timestamp("approved_at"),
   rejectedAt: timestamp("rejected_at"),
@@ -283,9 +328,9 @@ export const withdrawal = pgTable("withdrawal", {
   userId: varchar("user_id", { length: 36 })
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  currency: currencyEnum('currency').notNull(),
+  currency: currencyEnum("currency").notNull(),
   amount: varchar("amount", { length: 255 }).notNull(),
-  status: statusEnum('status').notNull().default('PENDING'),
+  status: statusEnum("status").notNull().default("PENDING"),
   destinationAddress: text("destination_address").notNull(),
   rejectionReason: text("rejection_reason"),
   approvedAt: timestamp("approved_at"),
@@ -311,11 +356,11 @@ export const transfer = pgTable("transfer", {
   recipientId: varchar("recipient_id", { length: 36 })
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  fromCurrency: currencyEnum('from_currency').notNull(),
-  toCurrency: currencyEnum('to_currency').notNull(),
+  fromCurrency: currencyEnum("from_currency").notNull(),
+  toCurrency: currencyEnum("to_currency").notNull(),
   amount: varchar("amount", { length: 255 }).notNull(),
-  type: transferTypeEnum('type').notNull(),
-  status: statusEnum('status').notNull().default('PENDING'),
+  type: transferTypeEnum("type").notNull(),
+  status: statusEnum("status").notNull().default("PENDING"),
   rejectionReason: text("rejection_reason"),
   approvedAt: timestamp("approved_at"),
   rejectedAt: timestamp("rejected_at"),

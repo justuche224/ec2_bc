@@ -43,6 +43,13 @@
       "when": 1747351686277,
       "tag": "0005_green_famine",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1748690259680,
+      "tag": "0006_numerous_gladiator",
+      "breakpoints": true
     }
   ]
 }
