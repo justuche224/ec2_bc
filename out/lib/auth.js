@@ -1,21 +1,20 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import db from "../db/index.js";
-// import { emailHarmony } from "better-auth-harmony";
 import { mailService } from "../services/mail.service.js";
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
-        provider: "postgres",
+        provider: "pg",
     }),
     rateLimit: {
-        enabled: true,
-        window: 60, // time window in seconds
-        max: 10, // max requests in the window
         customRules: {
-            "/forget-password": { window: 10, max: 2 },
+            "/forget-password": { window: 10, max: 3 },
+            "/sign-in/email": {
+                window: 10,
+                max: 3,
+            },
         },
     },
-    // plugins: [emailHarmony()],
     emailAndPassword: {
         enabled: true,
         requireEmailVerification: true,
@@ -42,7 +41,31 @@ export const auth = betterAuth({
                 type: "boolean",
                 default: false,
             },
+            is_npo: {
+                type: "boolean",
+                default: false,
+            },
         },
     },
-    trustedOrigins: process.env.NODE_ENV === "production" ? [process.env.FRONTEND_URL] : ["http://localhost:5173", "http://localhost:3000"],
+    advanced: {
+        defaultCookieAttributes: {
+            secure: true,
+            httpOnly: true,
+            sameSite: "none",
+            domain: ".ecohavest.org",
+        },
+    },
+    trustedOrigins: process.env.NODE_ENV === "production"
+        ? [process.env.FRONTEND_URL]
+        : [
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "https://ecohavest.org",
+        ],
+    logger: {
+        level: "debug",
+        log(level, message, ...args) {
+            console.log(level, message, ...args);
+        },
+    },
 });

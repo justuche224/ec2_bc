@@ -403,6 +403,45 @@ class MailService {
   }
 
   /**
+   * Send paypal deposit instructions email
+   */
+  async sendPaypalDepositInstructions(
+    email: string,
+    amount: string,
+    paypalEmail: string,
+    paypalName: string,
+    depositId: string
+  ) {
+    const subject = "Paypal Deposit Instructions";
+    const content = `
+    <div class="content">
+      <h2>Paypal Deposit Instructions</h2>
+      <p>To deposit ${amount} to your EcoHarvest account, please follow these steps:</p>
+      <ol>
+        <li>Open Paypal and tap the + button in the top right corner.</li>
+        <li>Select "Pay" and then "Pay Paypal" or "Pay Paypal Email".</li>
+        <li>Enter the amount ${amount} and the paypal email pay@ecohavest.org.</li>
+        <li>Enter the name EcoHarvest as the recipient.</li>
+        <li>Tap "Pay" to complete the transaction.</li>
+      </ol>
+      <div>
+        <p>After sending the payment, please upload the proof of payment (image or screenshot) below to confirm your deposit.</p>
+        <a href="${process.env.FRONTEND_URL}/dashboard/deposit/paypal/${depositId}">Upload Proof of Payment</a>
+      </div>
+      <p>Please ensure the transaction is sent to the correct paypal email and recipient. Once the deposit is confirmed, your account will be credited with the funds.</p>
+      <p>If you have any questions, please contact our support team at <a href="mailto:support@ecohavest.org">support@ecohavest.org</a></p>
+    </div>
+    `;
+
+    const html = this.getBaseTemplate(content);
+    await this.sendMail({
+      to: email,
+      subject,
+      text: "Paypal Deposit Instructions",
+      html,
+    });
+  }
+  /**
    * Send deposit notification email
    */
   async sendDepositNotification(

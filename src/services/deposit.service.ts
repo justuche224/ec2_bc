@@ -1,6 +1,6 @@
 import { eq, desc, sql, and } from "drizzle-orm";
 import db from "../db/index.js";
-import { deposit, user, cashapp } from "../db/schema.js";
+import { deposit, user, cashapp, paypal } from "../db/schema.js";
 import type { Currency } from "./wallet.service.js";
 import { BalanceService } from "./balance.service.js";
 import { config } from "../config/index.js";
@@ -74,6 +74,32 @@ export class DepositService {
       .orderBy(desc(cashapp.createdAt));
   }
 
+  async getAllPaypalDeposits() {
+    return await db
+      .select({
+        id: paypal.id,
+        userId: paypal.userId,
+        amount: paypal.amount,
+        paypalEmail: paypal.paypalEmail,
+        paypalName: paypal.paypalName,
+        paymentProof: paypal.paymentProof,
+        status: paypal.status,
+        rejectionReason: paypal.rejectionReason,
+        approvedAt: paypal.approvedAt,
+        rejectedAt: paypal.rejectedAt,
+        createdAt: paypal.createdAt,
+        updatedAt: paypal.updatedAt,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      })
+      .from(paypal)
+      .leftJoin(user, eq(paypal.userId, user.id))
+      .orderBy(desc(paypal.createdAt));
+  }
+
   async createDeposit(
     userId: string,
     systemWalletId: string,
@@ -137,6 +163,39 @@ export class DepositService {
     return result;
   }
 
+  async createPaypalDeposit(
+    userId: string,
+    amount: string,
+    paypalEmail: string,
+    paypalName: string
+  ) {
+    const userRecord = await this.getUserById(userId);
+    if (!userRecord) {
+      throw new Error("User not found");
+    }
+    const id = uuidv4();
+    const result = await db.insert(paypal).values({
+      id,
+      userId,
+      amount,
+      paypalEmail,
+      paypalName,
+      status: "PENDING",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    if (userRecord && userRecord.email) {
+      mailService.sendPaypalDepositInstructions(
+        userRecord.email,
+        amount,
+        paypalEmail,
+        paypalName,
+        id
+      );
+    }
+    return result;
+  }
+
   async getUserDeposits(userId: string) {
     return await db
       .select()
@@ -153,6 +212,13 @@ export class DepositService {
       .orderBy(desc(cashapp.createdAt));
   }
 
+  async getPaypalDeposits(userId: string) {
+    return await db
+      .select()
+      .from(paypal)
+      .where(eq(paypal.userId, userId))
+      .orderBy(desc(paypal.createdAt));
+  }
   async getDepositById(depositId: string) {
     const depositRecord = await db
       .select()
@@ -172,6 +238,15 @@ export class DepositService {
     return depositRecord[0] || null;
   }
 
+  async getPaypalDepositById(depositId: string) {
+    const depositRecord = await db
+      .select()
+      .from(paypal)
+      .where(eq(paypal.id, depositId))
+      .limit(1); 
+    return depositRecord[0] || null;
+  }
+
   async getUserCashappDepositById(depositId: string, userId: string) {
     const depositRecord = await db
       .select()
@@ -179,6 +254,15 @@ export class DepositService {
       .where(and(eq(cashapp.id, depositId), eq(cashapp.userId, userId)))
       .limit(1);
 
+    return depositRecord[0] || null;
+  }
+
+  async getUserPaypalDepositById(depositId: string, userId: string) {
+    const depositRecord = await db
+      .select()
+      .from(paypal)
+      .where(and(eq(paypal.id, depositId), eq(paypal.userId, userId)))
+      .limit(1);
     return depositRecord[0] || null;
   }
 
@@ -227,8 +311,58 @@ export class DepositService {
     return { success: true };
   }
 
+  async uploadPaypalDepositProof(
+    depositId: string,
+    proofFile: File,
+    userId: string
+  ) {
+    const depositRecord = await this.getUserPaypalDepositById(
+      depositId,
+      userId
+    );
+    if (!depositRecord) {
+      throw new Error("Deposit not found");
+    }
+    if (!proofFile.type.startsWith("image/")) {
+      throw new Error("Proof must be an image");
+    }
+    if (proofFile.size > config.upload.maxFileSize) {
+      throw new Error("Proof must be under 5MB");
+    }
+    const filename = `${uuidv4()}-${proofFile.name}`;
+    const filepath = join(config.storage.paypalProofs, filename);
+    const arrayBuffer = await proofFile.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    await sharp(buffer)
+      .resize(
+        config.upload.imageProcessing.maxWidth,
+        config.upload.imageProcessing.maxHeight,
+        {
+          fit: "inside",
+        }
+      )
+      .jpeg({ quality: config.upload.imageProcessing.quality })
+      .toFile(filepath);
+
+    await db
+      .update(paypal)
+      .set({
+        paymentProof: filename,
+        status: "PROCESSING",
+        updatedAt: new Date(),
+      })
+      .where(eq(paypal.id, depositId));
+
+    return { success: true };
+  }
+
   async getCashappDepositProof(filename: string) {
     const filepath = join(config.storage.depositProofs, filename);
+    return await readFile(filepath);
+  }
+
+  async getPaypalDepositProof(filename: string) {
+    const filepath = join(config.storage.paypalProofs, filename);
     return await readFile(filepath);
   }
 
@@ -324,6 +458,47 @@ export class DepositService {
     return result;
   }
 
+  async approvePaypalDeposit(depositId: string) {
+    const depositRecord = await this.getPaypalDepositById(depositId);
+    if (!depositRecord) {
+      throw new Error("Deposit not found");
+    }
+    if (depositRecord.status !== "PROCESSING") {
+      throw new Error(`Cannot approve deposit with status: ${depositRecord.status}`);
+    }
+
+    const result = await db.transaction(async (tx) => {
+      await tx
+        .update(paypal)
+        .set({
+          status: "APPROVED",
+          approvedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(paypal.id, depositId));
+
+      balanceService.incrementBalance(
+        depositRecord.userId,
+        "USDT",
+        depositRecord.amount
+      );
+
+      return { success: true };
+    });
+
+    const userRecord = await this.getUserById(depositRecord.userId);
+    if (userRecord && userRecord.email) {
+      await mailService.sendDepositNotification(
+        userRecord.email,
+        depositRecord.amount,
+        "USD",
+        "APPROVED"
+      );
+    }
+
+    return result;
+  }
+
   async rejectDeposit(depositId: string, rejectionReason: string) {
     const depositRecord = await this.getDepositById(depositId);
     if (!depositRecord) {
@@ -380,6 +555,37 @@ export class DepositService {
         updatedAt: new Date(),
       })
       .where(eq(cashapp.id, depositId));
+
+    const userRecord = await this.getUserById(depositRecord.userId);
+    if (userRecord && userRecord.email) {
+      mailService.sendDepositNotification(
+        userRecord.email,
+        depositRecord.amount,
+        "USD",
+        "REJECTED"
+      );
+    }
+
+    return result;
+  }
+
+  async rejectPaypalDeposit(depositId: string, rejectionReason: string) {
+    const depositRecord = await this.getPaypalDepositById(depositId);
+    if (!depositRecord) {
+      throw new Error("Deposit not found");
+    }
+    if (depositRecord.status !== "PROCESSING") {
+      throw new Error(`Cannot reject deposit with status: ${depositRecord.status}`);
+    }
+    const result = await db
+      .update(paypal)
+      .set({
+        status: "REJECTED",
+        rejectionReason,
+        rejectedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(paypal.id, depositId));
 
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {
@@ -451,6 +657,37 @@ export class DepositService {
         updatedAt: new Date(),
       })
       .where(eq(cashapp.id, depositId));
+
+    const userRecord = await this.getUserById(depositRecord.userId);
+    if (userRecord && userRecord.email) {
+      mailService.sendDepositNotification(
+        userRecord.email,
+        depositRecord.amount,
+        "USD",
+        "FAILED"
+      );
+    }
+
+    return result;
+  }
+
+  async markPaypalDepositAsFailed(depositId: string, reason: string) {
+    const depositRecord = await this.getPaypalDepositById(depositId);
+    if (!depositRecord) {
+      throw new Error("Deposit not found");
+    }
+    if (depositRecord.status !== "PROCESSING") {
+      throw new Error(`Cannot mark as failed deposit with status: ${depositRecord.status}`);
+    }
+    const result = await db
+      .update(paypal)
+      .set({
+        status: "FAILED",
+        rejectionReason: reason,
+        rejectedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(paypal.id, depositId));
 
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {

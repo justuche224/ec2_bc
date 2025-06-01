@@ -3,7 +3,7 @@ import { productionConfig } from "./production.js";
 const developmentConfig = {
     port: process.env.PORT || 5000,
     cors: {
-        origin: ["http://localhost:3000", "http://localhost:5173"],
+        origin: ["http://localhost:3000", "http://localhost:5173", "https://ecohavest.org",],
         allowHeaders: ["Content-Type", "Authorization"],
         allowMethods: ["POST", "GET", "OPTIONS", "PUT", "DELETE"],
         exposeHeaders: ["Content-Length"],
@@ -15,6 +15,7 @@ const developmentConfig = {
         walletImages: join(process.cwd(), "storage", "wallet-images"),
         profileImages: join(process.cwd(), "storage", "profile-images"),
         productImages: join(process.cwd(), "storage", "product-images"),
+        depositProofs: join(process.cwd(), "storage", "deposit-proofs"),
     },
     upload: {
         maxFileSize: 5 * 1024 * 1024, // 5MB

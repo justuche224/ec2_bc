@@ -8,7 +8,6 @@ export class DepositController {
   static async serveCashappDepositProof(c: Context) {
     try {
       const filename = c.req.param("filename");
-      console.log("filename", filename);
       const user = c.get("user");
       const userId = user?.id;
       const isAdmin = user?.role === "ADMIN";
@@ -18,7 +17,6 @@ export class DepositController {
       }
 
       const fileBuffer = await depositService.getCashappDepositProof(filename);
-      console.log("fileBuffer", fileBuffer);
       return new Response(fileBuffer, {
         status: 200,
         headers: {
@@ -33,6 +31,34 @@ export class DepositController {
       );
     }
   }
+
+  static async servePaypalDepositProof(c: Context) {
+    try {
+      const filename = c.req.param("filename");
+      const user = c.get("user");
+      const userId = user?.id;
+      const isAdmin = user?.role === "ADMIN";
+
+      if (!userId) {
+        return c.json({ error: "Unauthorized: No user ID found" }, 401);
+      }
+
+      const fileBuffer = await depositService.getPaypalDepositProof(filename);
+      return new Response(fileBuffer, {
+        status: 200,
+        headers: {
+          "Content-Type": "image/jpeg",
+        },
+      });
+    } catch (error) {
+      console.error("Error serving paypal deposit proof:", error);
+      return new Response(
+        error instanceof Error ? error.message : "File not found",
+        { status: 404 }
+      );
+    }
+  }
+
   static async getAllDeposits(c: Context) {
     try {
       const user = c.get("user");
@@ -55,7 +81,6 @@ export class DepositController {
   }
 
   static async getAllCashappDeposits(c: Context) {
-    console.log("getAllCashappDeposits");
     try {
       const user = c.get("user");
       if (!user || user.role !== "ADMIN") {
@@ -71,6 +96,26 @@ export class DepositController {
             error instanceof Error
               ? error.message
               : "Failed to get cashapp deposits",
+        },
+        500
+      );
+    }
+  }
+
+  static async getAllPaypalDeposits(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Unauthorized: Admin access required" }, 403);
+      }
+      const deposits = await depositService.getAllPaypalDeposits();
+      return c.json({ data: deposits }, 200);
+    } catch (error) {
+      console.error("Error getting all paypal deposits:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to get paypal deposits",
         },
         500
       );
@@ -118,26 +163,20 @@ export class DepositController {
 
   static async createCashappDeposit(c: Context) {
     try {
-      console.log("createCashappDeposit");
       const user = c.get("user");
       if (!user) {
         return c.json({ error: "Unauthorized: No user found" }, 401);
       }
-      console.log("user found");
       const { amount, cashtag, cashappName } = await c.req.json();
-      console.log("amount, cashtag, cashappName", amount, cashtag, cashappName);
       if (!amount || !cashtag || !cashappName) {
-        console.log("missing required fields");
         return c.json({ error: "Missing required fields" }, 400);
       }
-      console.log("amount, cashtag, cashappName found");
       const result = await depositService.createCashappDeposit(
         user.id,
         amount,
         cashtag,
         cashappName
       );
-      console.log("cashapp deposit created");
       return c.json({ success: true, deposit: result }, 201);
     } catch (error) {
       console.error("Error creating cashapp deposit:", error);
@@ -147,6 +186,37 @@ export class DepositController {
             error instanceof Error
               ? error.message
               : "Failed to create cashapp deposit",
+        },
+        500
+      );
+    }
+  }
+
+  static async createPaypalDeposit(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user) {
+        return c.json({ error: "Unauthorized: No user found" }, 401);
+      }
+      const { amount, paypalEmail, paypalName } = await c.req.json();
+      if (!amount || !paypalEmail || !paypalName) {
+        return c.json({ error: "Missing required fields" }, 400);
+      }
+      const result = await depositService.createPaypalDeposit(
+        user.id,
+        amount,
+        paypalEmail,
+        paypalName
+      );
+      return c.json({ success: true, deposit: result }, 201);
+    } catch (error) {
+      console.error("Error creating paypal deposit:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to create paypal deposit",
         },
         500
       );
@@ -173,15 +243,33 @@ export class DepositController {
     }
   }
 
+  static async getUserPaypalDeposits(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user) {
+        return c.json({ error: "Unauthorized: No user found" }, 401);
+      }
+      const deposits = await depositService.getPaypalDeposits(user.id);
+      return c.json({ data: deposits }, 200);
+    } catch (error) {
+      console.error("Error getting user paypal deposits:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to get deposits",
+        },
+        500
+      );
+    }
+  }
+
   static async getUserCashappDepositById(c: Context) {
-    console.log("getUserCashappDepositById");
     try {
       const user = c.get("user");
       if (!user) {
         return c.json({ error: "Unauthorized: No user found" }, 401);
       }
       const depositId = c.req.param("id");
-      console.log("depositId", depositId);
       if (!depositId) {
         return c.json({ error: "Deposit ID is required" }, 400);
       }
@@ -205,27 +293,53 @@ export class DepositController {
     }
   }
 
-  static async uploadCashappDepositProof(c: Context) {
-    console.log("uploadCashappDepositProof");
+  static async getUserPaypalDepositById(c: Context) {
     try {
       const user = c.get("user");
       if (!user) {
         return c.json({ error: "Unauthorized: No user found" }, 401);
       }
-      console.log("user found");
+      const depositId = c.req.param("id");
+      if (!depositId) {
+        return c.json({ error: "Deposit ID is required" }, 400);
+      }
+      const deposit = await depositService.getUserPaypalDepositById(
+        depositId,
+        user.id
+      );
+      if (!deposit) {
+        return c.json({ error: "Deposit not found" }, 404);
+      }
+      return c.json({ data: deposit }, 200);
+    } catch (error) {
+      console.error("Error getting user paypal deposit:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to get deposit",
+        },
+        500
+      );
+    }
+  }
+
+  static async uploadCashappDepositProof(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user) {
+        return c.json({ error: "Unauthorized: No user found" }, 401);
+      }
       const formData = await c.req.formData();
       const depositId = c.req.param("id");
       const proofFile = formData.get("proof") as File;
       if (!depositId || !proofFile) {
         return c.json({ error: "Deposit ID and proof file are required" }, 400);
       }
-      console.log("depositId and proofFile found");
       const result = await depositService.uploadCashappDepositProof(
         depositId,
         proofFile,
         user.id
       );
-      console.log("result", result);
       return c.json({ success: true, deposit: result }, 200);
     } catch (error) {
       console.error("Error uploading cashapp deposit proof:", error);
@@ -235,6 +349,36 @@ export class DepositController {
             error instanceof Error
               ? error.message
               : "Failed to upload cashapp deposit proof",
+        },
+        500
+      );
+    }
+  }
+
+  static async uploadPaypalDepositProof(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user) {
+        return c.json({ error: "Unauthorized: No user found" }, 401);
+      }
+      const formData = await c.req.formData();
+      const depositId = c.req.param("id");
+      const proofFile = formData.get("proof") as File;
+      if (!depositId || !proofFile) {
+        return c.json({ error: "Deposit ID and proof file are required" }, 400);
+      }
+      const result = await depositService.uploadPaypalDepositProof(
+        depositId,
+        proofFile,
+        user.id
+      );
+      return c.json({ success: true, deposit: result }, 200);
+    } catch (error) {
+      console.error("Error uploading paypal deposit proof:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to upload paypal deposit proof",
         },
         500
       );
@@ -294,7 +438,6 @@ export class DepositController {
         return c.json({ error: "Unauthorized: Admin access required" }, 403);
       }
       const depositId = c.req.param("id");
-      console.log("depositId", depositId);
       const result = await depositService.approveCashappDeposit(depositId);
       return c.json(result, 200);
     } catch (error) {
@@ -305,6 +448,27 @@ export class DepositController {
             error instanceof Error
               ? error.message
               : "Failed to approve cashapp deposit",
+        },
+        500
+      );
+    }
+  }
+
+  static async approvePaypalDeposit(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Unauthorized: Admin access required" }, 403);
+      }
+      const depositId = c.req.param("id");
+      const result = await depositService.approvePaypalDeposit(depositId);
+      return c.json(result, 200);
+    } catch (error) {
+      console.error("Error approving paypal deposit:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to approve paypal deposit",
         },
         500
       );
@@ -374,6 +538,34 @@ export class DepositController {
     }
   }
 
+  static async rejectPaypalDeposit(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Unauthorized: Admin access required" }, 403);
+      }
+      const depositId = c.req.param("id");
+      const { rejectionReason } = await c.req.json();
+      if (!rejectionReason) {
+        return c.json({ error: "Rejection reason is required" }, 400);
+      }
+      const result = await depositService.rejectPaypalDeposit(
+        depositId,
+        rejectionReason
+      );
+      return c.json({ success: true, deposit: result }, 200);
+    } catch (error) {
+      console.error("Error rejecting paypal deposit:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to reject paypal deposit",
+        },
+        500
+      );
+    }
+  }
+
   static async markCashappDepositAsFailed(c: Context) {
     try {
       const user = c.get("user");
@@ -398,6 +590,34 @@ export class DepositController {
             error instanceof Error
               ? error.message
               : "Failed to mark cashapp deposit as failed",
+        },
+        500
+      );
+    }
+  }
+
+  static async markPaypalDepositAsFailed(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Unauthorized: Admin access required" }, 403);
+      }
+      const depositId = c.req.param("id");
+      const { reason } = await c.req.json();
+      if (!reason) {
+        return c.json({ error: "Failure reason is required" }, 400);
+      }
+      const result = await depositService.markPaypalDepositAsFailed(
+        depositId,
+        reason
+      );
+      return c.json({ success: true, deposit: result }, 200);
+    } catch (error) {
+      console.error("Error marking paypal deposit as failed:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to mark paypal deposit as failed",
         },
         500
       );
