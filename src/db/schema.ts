@@ -322,6 +322,26 @@ export const paypal = pgTable("paypal", {
   updatedAt: timestamp("updated_at").notNull(),
 });
 
+export const bank = pgTable("bank", {
+  id: varchar("id", { length: 36 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id", { length: 36 })
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  amount: varchar("amount", { length: 255 }).notNull(),
+  bankName: text("bank_name").notNull(),
+  bankAccountNumber: text("bank_account_number").notNull(),
+  bankAccountName: text("bank_account_name").notNull(),
+  paymentProof: text("payment_proof"),
+  status: statusEnum("status").notNull().default("PENDING"),
+  rejectionReason: text("rejection_reason"),
+  approvedAt: timestamp("approved_at"),
+  rejectedAt: timestamp("rejected_at"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
 export const balanceRelations = relations(balance, ({ one }) => ({
   user: one(user, {
     fields: [balance.userId],

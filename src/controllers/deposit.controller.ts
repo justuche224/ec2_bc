@@ -59,6 +59,33 @@ export class DepositController {
     }
   }
 
+  static async serveBankDepositProof(c: Context) {
+    try {
+      const filename = c.req.param("filename");
+      const user = c.get("user");
+      const userId = user?.id;
+      const isAdmin = user?.role === "ADMIN";
+
+      if (!userId) {
+        return c.json({ error: "Unauthorized: No user ID found" }, 401);
+      }
+
+      const fileBuffer = await depositService.getBankDepositProof(filename);
+      return new Response(fileBuffer, {
+        status: 200,
+        headers: {
+          "Content-Type": "image/jpeg",
+        },
+      });
+    } catch (error) {
+      console.error("Error serving bank deposit proof:", error);
+      return new Response(
+        error instanceof Error ? error.message : "File not found",
+        { status: 404 }
+      );
+    }
+  }
+
   static async getAllDeposits(c: Context) {
     try {
       const user = c.get("user");
@@ -116,6 +143,26 @@ export class DepositController {
         {
           error:
             error instanceof Error ? error.message : "Failed to get paypal deposits",
+        },
+        500
+      );
+    }
+  }
+
+  static async getAllBankDeposits(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Unauthorized: Admin access required" }, 403);
+      }
+      const deposits = await depositService.getAllBankDeposits();
+      return c.json({ data: deposits }, 200);
+    } catch (error) {
+      console.error("Error getting all bank deposits:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to get bank deposits",
         },
         500
       );
@@ -223,6 +270,36 @@ export class DepositController {
     }
   }
 
+  static async createBankDeposit(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user) {
+        return c.json({ error: "Unauthorized: No user found" }, 401);
+      }
+      const { amount, bankName, bankAccountName, bankAccountNumber } = await c.req.json();
+      if (!amount || !bankName || !bankAccountName || !bankAccountNumber) {
+        return c.json({ error: "Missing required fields" }, 400);
+      }
+      const result = await depositService.createBankDeposit(
+        user.id,
+        amount,
+        bankName,
+        bankAccountName,
+        bankAccountNumber
+      );
+      return c.json({ success: true, deposit: result }, 201);
+    } catch (error) {
+      console.error("Error creating bank deposit:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to create bank deposit",
+        },
+        500
+      );
+    }
+  }
+
   static async getUserCashappDeposits(c: Context) {
     try {
       const user = c.get("user");
@@ -253,6 +330,26 @@ export class DepositController {
       return c.json({ data: deposits }, 200);
     } catch (error) {
       console.error("Error getting user paypal deposits:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to get deposits",
+        },
+        500
+      );
+    }
+  }
+
+  static async getUserBankDeposits(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user) {
+        return c.json({ error: "Unauthorized: No user found" }, 401);
+      }
+      const deposits = await depositService.getBankDeposits(user.id);
+      return c.json({ data: deposits }, 200);
+    } catch (error) {
+      console.error("Error getting user bank deposits:", error);
       return c.json(
         {
           error:
@@ -323,6 +420,36 @@ export class DepositController {
     }
   }
 
+  static async getUserBankDepositById(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user) {
+        return c.json({ error: "Unauthorized: No user found" }, 401);
+      }
+      const depositId = c.req.param("id");
+      if (!depositId) {
+        return c.json({ error: "Deposit ID is required" }, 400);
+      }
+      const deposit = await depositService.getUserBankDepositById(
+        depositId,
+        user.id
+      );
+      if (!deposit) {
+        return c.json({ error: "Deposit not found" }, 404);
+      }
+      return c.json({ data: deposit }, 200);
+    } catch (error) {
+      console.error("Error getting user bank deposit by id:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to get deposit",
+        },
+        500
+      );
+    }
+  }
+
   static async uploadCashappDepositProof(c: Context) {
     try {
       const user = c.get("user");
@@ -379,6 +506,36 @@ export class DepositController {
         {
           error:
             error instanceof Error ? error.message : "Failed to upload paypal deposit proof",
+        },
+        500
+      );
+    }
+  }
+
+  static async uploadBankDepositProof(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user) {
+        return c.json({ error: "Unauthorized: No user found" }, 401);
+      }
+      const formData = await c.req.formData();
+      const depositId = c.req.param("id");
+      const proofFile = formData.get("proof") as File;
+      if (!depositId || !proofFile) {
+        return c.json({ error: "Deposit ID and proof file are required" }, 400);
+      }
+      const result = await depositService.uploadBankDepositProof(
+        depositId,
+        proofFile,
+        user.id
+      );
+      return c.json({ success: true, deposit: result }, 200);
+    } catch (error) {
+      console.error("Error uploading bank deposit proof:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to upload bank deposit proof",
         },
         500
       );
@@ -469,6 +626,27 @@ export class DepositController {
         {
           error:
             error instanceof Error ? error.message : "Failed to approve paypal deposit",
+        },
+        500
+      );
+    }
+  }
+
+  static async approveBankDeposit(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Unauthorized: Admin access required" }, 403);
+      }
+      const depositId = c.req.param("id");
+      const result = await depositService.approveBankDeposit(depositId);
+      return c.json(result, 200);
+    } catch (error) {
+      console.error("Error approving bank deposit:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to approve bank deposit",
         },
         500
       );
@@ -566,6 +744,34 @@ export class DepositController {
     }
   }
 
+  static async rejectBankDeposit(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Unauthorized: Admin access required" }, 403);
+      }
+      const depositId = c.req.param("id");
+      const { rejectionReason } = await c.req.json();
+      if (!rejectionReason) {
+        return c.json({ error: "Rejection reason is required" }, 400);
+      }
+      const result = await depositService.rejectBankDeposit(
+        depositId,
+        rejectionReason
+      );
+      return c.json({ success: true, deposit: result }, 200);
+    } catch (error) {
+      console.error("Error rejecting bank deposit:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to reject bank deposit",
+        },
+        500
+      );
+    }
+  }
+
   static async markCashappDepositAsFailed(c: Context) {
     try {
       const user = c.get("user");
@@ -624,6 +830,33 @@ export class DepositController {
     }
   }
 
+  static async markBankDepositAsFailed(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Unauthorized: Admin access required" }, 403);
+      }
+      const depositId = c.req.param("id");
+      const { reason } = await c.req.json();
+      if (!reason) {
+        return c.json({ error: "Failure reason is required" }, 400);
+      }
+      const result = await depositService.markBankDepositAsFailed(
+        depositId,
+        reason
+      );
+      return c.json({ success: true, deposit: result }, 200);
+    } catch (error) {
+      console.error("Error marking bank deposit as failed:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to mark bank deposit as failed",
+        },
+        500
+      );
+    }
+  }
   static async markDepositAsFailed(c: Context) {
     console.log("markDepositAsFailed");
     try {

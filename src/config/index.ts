@@ -18,6 +18,7 @@ const developmentConfig = {
     productImages: join(process.cwd(), "storage", "product-images"),
     depositProofs: join(process.cwd(), "storage", "deposit-proofs"),
     paypalProofs: join(process.cwd(), "storage", "paypal-proofs"),
+    bankProofs: join(process.cwd(), "storage", "bank-proofs"),
   },
   upload: {
     maxFileSize: 5 * 1024 * 1024, // 5MB

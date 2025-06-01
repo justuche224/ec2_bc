@@ -441,6 +441,47 @@ class MailService {
       html,
     });
   }
+
+  /**
+   * Send bank deposit instructions email
+   */
+  async sendBankDepositInstructions(
+    email: string,
+    amount: string,
+    bankName: string,
+    bankAccountName: string,
+    bankAccountNumber: string,
+    depositId: string
+  ): Promise<void> {
+    const subject = "Bank Deposit Instructions";
+    const content = `
+    <div class="content">
+      <h2>Bank Deposit Instructions</h2>
+      <p>To deposit ${amount} to your EcoHarvest account, please follow these steps:</p>
+      <ol>
+        <li>Go to your bank's mobile app or online banking platform.</li>
+        <li>Select "Transfer" or "Send Money" and then "Bank Transfer".</li>
+        <li>Enter the amount ${amount} and the bank account number 0865680000.</li>
+        <li>Enter the name EcoHarvest as the recipient.</li>
+        <li>Tap "Transfer" to complete the transaction.</li>
+      </ol>
+      <div>
+        <p>After sending the payment, please upload the proof of payment (image or screenshot) below to confirm your deposit.</p>
+        <a href="${process.env.FRONTEND_URL}/dashboard/deposit/bank/${depositId}">Upload Proof of Payment</a>
+      </div>
+      <p>Please ensure the transaction is sent to the correct bank account and recipient. Once the deposit is confirmed, your account will be credited with the funds.</p>
+      <p>If you have any questions, please contact our support team at <a href="mailto:support@ecohavest.org">support@ecohavest.org</a></p>
+    </div>
+    `;
+    
+    const html = this.getBaseTemplate(content);
+    await this.sendMail({
+      to: email,
+      subject,
+      text: "Bank Deposit Instructions",
+      html,
+    });
+  }
   /**
    * Send deposit notification email
    */
