@@ -378,6 +378,65 @@ export const withdrawal = pgTable("withdrawal", {
   updatedAt: timestamp("updated_at").notNull(),
 });
 
+export const cashappWithdrawal = pgTable("cashapp_withdrawal", {
+  id: varchar("id", { length: 36 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id", { length: 36 })
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  currency: currencyEnum("currency").notNull(),
+  amount: varchar("amount", { length: 255 }).notNull(),
+  status: statusEnum("status").notNull().default("PENDING"),
+  cashtag: text("cashtag").notNull(),
+  cashappName: text("cashapp_name").notNull(),
+  rejectionReason: text("rejection_reason"),
+  approvedAt: timestamp("approved_at"),
+  rejectedAt: timestamp("rejected_at"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const paypalWithdrawal = pgTable("paypal_withdrawal", {
+  id: varchar("id", { length: 36 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id", { length: 36 })
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  currency: currencyEnum("currency").notNull(),
+  amount: varchar("amount", { length: 255 }).notNull(),
+  status: statusEnum("status").notNull().default("PENDING"),
+  paypalEmail: text("paypal_email").notNull(),
+  paypalName: text("paypal_name").notNull(),
+  rejectionReason: text("rejection_reason"),
+  approvedAt: timestamp("approved_at"),
+  rejectedAt: timestamp("rejected_at"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const bankWithdrawal = pgTable("bank_withdrawal", {
+  id: varchar("id", { length: 36 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id", { length: 36 })
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  currency: currencyEnum("currency").notNull(),
+  amount: varchar("amount", { length: 255 }).notNull(),
+  status: statusEnum("status").notNull().default("PENDING"),
+  bankName: text("bank_name").notNull(),
+  bankAccountNumber: text("bank_account_number").notNull(),
+  bankAccountName: text("bank_account_name").notNull(),
+  rejectionReason: text("rejection_reason"),
+  approvedAt: timestamp("approved_at"),
+  rejectedAt: timestamp("rejected_at"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+
 export const withdrawalRelations = relations(withdrawal, ({ one }) => ({
   user: one(user, {
     fields: [withdrawal.userId],
