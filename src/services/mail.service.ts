@@ -473,7 +473,7 @@ class MailService {
       <p>If you have any questions, please contact our support team at <a href="mailto:support@ecohavest.org">support@ecohavest.org</a></p>
     </div>
     `;
-    
+
     const html = this.getBaseTemplate(content);
     await this.sendMail({
       to: email,
@@ -485,12 +485,37 @@ class MailService {
   /**
    * Send deposit notification email
    */
-  async sendDepositNotification(
-    email: string,
-    amount: string,
-    currency: string,
-    status: string
-  ): Promise<void> {
+  async sendDepositNotification({
+    email,
+    amount,
+    currency,
+    status,
+    method,
+    date = new Date(),
+    address,
+    bankName,
+    bankAccountName,
+    bankAccountNumber,
+    cashtag,
+    cashappName,
+    paypalEmail,
+    paypalName,
+  }: {
+    email: string;
+    amount: string;
+    currency: string;
+    status: string;
+    method: string;
+    date: Date;
+    address?: string;
+    bankName?: string;
+    bankAccountName?: string;
+    bankAccountNumber?: string;
+    cashtag?: string;
+    cashappName?: string;
+    paypalEmail?: string;
+    paypalName?: string;
+  }): Promise<void> {
     let subject = "";
     if (status === "PENDING") {
       subject = `Your ${currency} deposit has been received`;
@@ -498,7 +523,21 @@ class MailService {
       subject = `Your ${currency} deposit is now ${status.toLowerCase()}`;
     }
 
-    const { text, html } = this.getDepositTemplate(amount, currency, status);
+    const { text, html } = this.getDepositTemplate(
+      amount,
+      currency,
+      status,
+      method,
+      date,
+      address,
+      bankName,
+      bankAccountName,
+      bankAccountNumber,
+      cashtag,
+      cashappName,
+      paypalEmail,
+      paypalName
+    );
 
     await this.sendMail({
       to: email,
@@ -511,13 +550,41 @@ class MailService {
   /**
    * Send withdrawal notification email
    */
-  async sendWithdrawalNotification(
-    email: string,
-    amount: string,
-    currency: string,
-    status: string,
-    rejectionReason?: string
-  ): Promise<void> {
+  async sendWithdrawalNotification({
+    name,
+    email,
+    amount,
+    currency,
+    status,
+    method,
+    date = new Date(),
+    address,
+    bankName,
+    bankAccountName,
+    bankAccountNumber,
+    cashtag,
+    cashappName,
+    paypalEmail,
+    paypalName,
+    rejectionReason,
+  }: {
+    name: string;
+    email: string;
+    amount: string;
+    currency: string;
+    status: string;
+    method: string;
+    date: Date;
+    address?: string;
+    bankName?: string;
+    bankAccountName?: string;
+    bankAccountNumber?: string;
+    cashtag?: string;
+    cashappName?: string;
+    paypalEmail?: string;
+    paypalName?: string;
+    rejectionReason?: string;
+  }): Promise<void> {
     let subject = "";
     if (status === "PENDING") {
       subject = `Your ${currency} withdrawal request has been received`;
@@ -526,9 +593,20 @@ class MailService {
     }
 
     const { text, html } = this.getWithdrawalTemplate(
+      name,
       amount,
       currency,
       status,
+      method,
+      date,
+      address,
+      bankName,
+      bankAccountName,
+      bankAccountNumber,
+      cashtag,
+      cashappName,
+      paypalEmail,
+      paypalName,
       rejectionReason
     );
 
@@ -580,19 +658,30 @@ class MailService {
   private getDepositTemplate(
     amount: string,
     currency: string,
-    status: string
+    status: string,
+    method: string,
+    date: Date,
+    address?: string,
+    bankName?: string,
+    bankAccountName?: string,
+    bankAccountNumber?: string,
+    cashtag?: string,
+    cashappName?: string,
+    paypalEmail?: string,
+    paypalName?: string
   ): { text: string; html: string } {
     let statusMessage = "";
     let buttonText = "";
     let buttonUrl = process.env.FRONTEND_URL || "https://ecohavest.org";
     let additionalInfo = "";
+    let depositDetails = "";
 
     if (status === "PENDING") {
       statusMessage =
         "Your deposit is being processed and will be credited to your account once confirmed.";
       buttonText = "Track Deposit";
       additionalInfo =
-        "Deposits typically take 10-30 minutes to confirm, depending on network conditions.";
+        "Deposits typically take 10-30 minutes to confirm for crypto, and up to 1 business day for bank transfers, depending on network conditions and banking hours.";
     } else if (status === "APPROVED") {
       statusMessage =
         "Your deposit has been approved and credited to your account. You can now use these funds for investments.";
@@ -611,14 +700,65 @@ class MailService {
         "If you continue experiencing issues, please contact our support team.";
     }
 
+    // Deposit details based on method
+    if (method === "CRYPTO" && address) {
+      depositDetails = `
+        <p><strong>Method:</strong> Cryptocurrency</p>
+        <p><strong>Receiving Address:</strong> ${address}</p>
+      `;
+    } else if (
+      method === "BANK" &&
+      bankName &&
+      bankAccountName &&
+      bankAccountNumber
+    ) {
+      depositDetails = `
+        <p><strong>Method:</strong> Bank Transfer</p>
+        <p><strong>Bank Name:</strong> ${bankName}</p>
+        <p><strong>Account Name:</strong> ${bankAccountName}</p>
+        <p><strong>Account Number:</strong> ${bankAccountNumber}</p>
+      `;
+    } else if (method === "CASHAPP" && cashtag && cashappName) {
+      depositDetails = `
+        <p><strong>Method:</strong> Cash App</p>
+        <p><strong>Our Cashtag:</strong> ${cashtag}</p>
+        <p><strong>Our Cash App Name:</strong> ${cashappName}</p>
+      `;
+    } else if (method === "PAYPAL" && paypalEmail && paypalName) {
+      depositDetails = `
+        <p><strong>Method:</strong> PayPal</p>
+        <p><strong>Our PayPal Email:</strong> ${paypalEmail}</p>
+        <p><strong>Our PayPal Name:</strong> ${paypalName}</p>
+      `;
+    }
+
     const text = `
-    Deposit Notification
+    <h1 style="text-align: center;">Deposit Notification</h1>
     
+    Date: ${date.toLocaleDateString()}
     Amount: ${amount} ${currency}
     Status: ${status}
+    Method: ${method}
     
     ${statusMessage}
     
+    ${method === "CRYPTO" && address ? `Receiving Address: ${address}` : ""}
+    ${
+      method === "BANK" && bankName && bankAccountName && bankAccountNumber
+        ? `Bank: ${bankName}, Account: ${bankAccountName} (${bankAccountNumber})`
+        : ""
+    }
+    ${
+      method === "CASHAPP" && cashtag && cashappName
+        ? `Our Cashtag: ${cashtag}, Name: ${cashappName}`
+        : ""
+    }
+    ${
+      method === "PAYPAL" && paypalEmail && paypalName
+        ? `Our PayPal Email: ${paypalEmail}, Name: ${paypalName}`
+        : ""
+    }
+
     ${additionalInfo}
     
     Visit our website to view your deposit details: ${buttonUrl}
@@ -633,27 +773,39 @@ class MailService {
 
     const content = `
     <div class="content">
-      <h2>Deposit Notification</h2>
+      <h2 style="text-align: left; margin-bottom: 12px; font-size: 22px;">Deposit Notification</h2>
       
-      <div class="amount">${amount} ${currency}</div>
+      <div class="amount" style="text-align: left; margin-top: 0; margin-bottom: 4px; font-size: 28px;">${amount} ${currency} <span style="font-size: 0.5em; color: #64748b; font-weight: normal;">(via ${method})</span></div>
+      <p style="text-align: left; color: #64748b; font-size: 13px; margin-top: 0; margin-bottom: 16px;">Initiated on: ${date.toLocaleDateString()}</p>
       
-      <div style="text-align: center; margin: 24px 0;">
+      <div style="text-align: left; margin-top: 0; margin-bottom: 16px;">
         <span class="${statusClass} status">${status}</span>
       </div>
       
-      <p>${statusMessage}</p>
-      
+      <p style="text-align: left; margin-top: 0; margin-bottom: 16px; font-size: 15px;">${statusMessage}</p>
+
       ${
-        additionalInfo
-          ? `<div class="info-box"><p>${additionalInfo}</p></div>`
+        depositDetails
+          ? `
+      <div class="info-box" style="background-color: #f9fafb; border-left-color: #6b7280; margin-top: 0; margin-bottom: 16px; text-align: left; padding: 12px;">
+        <h4 style="margin-top: 0; margin-bottom: 8px; font-weight: 600; color: #374151; font-size: 14px;">Deposit Details:</h4>
+        ${depositDetails}
+      </div>
+      `
           : ""
       }
       
-      <div style="text-align: center;">
+      ${
+        additionalInfo
+          ? `<div class="info-box" style="margin-top: 0; margin-bottom: 16px; text-align: left; padding: 12px;"><p style="margin:0; font-size: 15px;">${additionalInfo}</p></div>`
+          : ""
+      }
+      
+      <div style="text-align: left; margin-top: 16px; margin-bottom: 16px;">
         <a href="${buttonUrl}" class="button">${buttonText}</a>
       </div>
       
-      <p>Need assistance? Our support team is available 24/7 at <a href="mailto:support@ecohavest.org">support@ecohavest.org</a></p>
+      <p style="text-align: left; font-size: 14px; color: #64748b; margin-top: 20px;">Need assistance? Our support team is available 24/7 at <a href="mailto:support@ecohavest.org">support@ecohavest.org</a></p>
     </div>
     `;
 
@@ -665,15 +817,27 @@ class MailService {
    * Get withdrawal email template
    */
   private getWithdrawalTemplate(
+    name: string,
     amount: string,
     currency: string,
     status: string,
+    method: string,
+    date: Date,
+    address?: string,
+    bankName?: string,
+    bankAccountName?: string,
+    bankAccountNumber?: string,
+    cashtag?: string,
+    cashappName?: string,
+    paypalEmail?: string,
+    paypalName?: string,
     rejectionReason?: string
   ): { text: string; html: string } {
     let statusMessage = "";
     let buttonText = "";
     let buttonUrl = process.env.FRONTEND_URL || "https://ecohavest.org";
     let additionalInfo = "";
+    let withdrawalDetails = "";
 
     if (status === "PENDING") {
       statusMessage = "Your withdrawal request is being processed by our team.";
@@ -682,24 +846,86 @@ class MailService {
         "Withdrawal requests are typically processed within 24 hours.";
     } else if (status === "APPROVED") {
       statusMessage =
-        "Your withdrawal has been approved and funds are being sent to your wallet.";
+        "Your withdrawal has been approved and funds are being sent.";
       buttonText = "View Transaction";
       additionalInfo =
-        "The funds should arrive in your wallet shortly, depending on network congestion.";
+        "The funds should arrive shortly, depending on the processing time of the payment method and network congestion.";
     } else if (status === "REJECTED") {
       statusMessage = "Your withdrawal request has been rejected.";
       buttonText = "Contact Support";
+    } else if (status === "COMPLETED") {
+      statusMessage =
+        "Your withdrawal has been successfully processed and funds have been sent.";
+      buttonText = "View Dashboard";
+    } else if (status === "FAILED") {
+      statusMessage =
+        "Unfortunately, your withdrawal attempt has failed. This could be due to issues with the provided details or network problems.";
+      buttonText = "Contact Support";
+      additionalInfo =
+        "Please double-check your withdrawal information or contact our support team for assistance.";
+    }
+
+    // Withdrawal details based on method
+    if (method === "CRYPTO" && address) {
+      withdrawalDetails = `
+        <p><strong>Method:</strong> Cryptocurrency</p>
+        <p><strong>Wallet Address:</strong> ${address}</p>
+      `;
+    } else if (
+      method === "BANK" &&
+      bankName &&
+      bankAccountName &&
+      bankAccountNumber
+    ) {
+      withdrawalDetails = `
+        <p><strong>Method:</strong> Bank Transfer</p>
+        <p><strong>Bank Name:</strong> ${bankName}</p>
+        <p><strong>Account Name:</strong> ${bankAccountName}</p>
+        <p><strong>Account Number:</strong> ${bankAccountNumber}</p>
+      `;
+    } else if (method === "CASHAPP" && cashtag && cashappName) {
+      withdrawalDetails = `
+        <p><strong>Method:</strong> Cash App</p>
+        <p><strong>Cashtag:</strong> ${cashtag}</p>
+        <p><strong>Cash App Name:</strong> ${cashappName}</p>
+      `;
+    } else if (method === "PAYPAL" && paypalEmail && paypalName) {
+      withdrawalDetails = `
+        <p><strong>Method:</strong> PayPal</p>
+        <p><strong>PayPal Email:</strong> ${paypalEmail}</p>
+        <p><strong>PayPal Name:</strong> ${paypalName}</p>
+      `;
     }
 
     const text = `
+    Dear ${name},
+
     Withdrawal Notification
     
+    Date: ${date.toLocaleDateString()}
     Amount: ${amount} ${currency}
     Status: ${status}
     ${rejectionReason ? `Rejection Reason: ${rejectionReason}` : ""}
     
     ${statusMessage}
     
+    ${method === "CRYPTO" && address ? `Wallet Address: ${address}` : ""}
+    ${
+      method === "BANK" && bankName && bankAccountName && bankAccountNumber
+        ? `Bank: ${bankName}, Account: ${bankAccountName} (${bankAccountNumber})`
+        : ""
+    }
+    ${
+      method === "CASHAPP" && cashtag && cashappName
+        ? `Cashtag: ${cashtag}, Name: ${cashappName}`
+        : ""
+    }
+    ${
+      method === "PAYPAL" && paypalEmail && paypalName
+        ? `PayPal Email: ${paypalEmail}, Name: ${paypalName}`
+        : ""
+    }
+
     ${additionalInfo}
     
     Visit our website to view your withdrawal details: ${buttonUrl}
@@ -710,25 +936,43 @@ class MailService {
         ? "status-approved"
         : status === "PENDING"
         ? "status-pending"
+        : status === "COMPLETED"
+        ? "status-completed"
+        : status === "FAILED"
+        ? "status-failed"
         : "status-rejected";
 
     const content = `
     <div class="content">
-      <h2>Withdrawal Notification</h2>
+      <h2 style="text-align: left; margin-bottom: 8px; font-size: 22px;">Withdrawal Notification</h2>
+      <p style="text-align: left; margin-top: 0; margin-bottom: 16px; font-size: 15px;">Dear ${name},</p>
       
-      <div class="amount">${amount} ${currency}</div>
+      <div class="amount" style="text-align: left; margin-top: 0; margin-bottom: 4px; font-size: 28px;">${amount} ${currency}</div>
+      <p style="text-align: left; color: #64748b; font-size: 13px; margin-top: 0; margin-bottom: 16px;">Requested on: ${date.toLocaleDateString()}</p>
       
-      <div style="text-align: center; margin: 24px 0;">
+      <div style="text-align: left; margin-top: 0; margin-bottom: 16px;">
         <span class="${statusClass} status">${status}</span>
       </div>
       
-      <p>${statusMessage}</p>
+      <p style="text-align: left; margin-top: 0; margin-bottom: 16px; font-size: 15px;">${statusMessage}</p>
+
+      ${
+        withdrawalDetails
+          ? `
+      <div class="info-box" style="background-color: #f9fafb; border-left-color: #6b7280; margin-top: 0; margin-bottom: 16px; text-align: left; padding: 12px;">
+        <h4 style="margin-top: 0; margin-bottom: 8px; font-weight: 600; color: #374151; font-size: 14px;">Withdrawal Details:</h4>
+        ${withdrawalDetails}
+      </div>
+      `
+          : ""
+      }
       
       ${
         rejectionReason
           ? `
-      <div class="alert-box">
-        <p><strong>Reason for rejection:</strong> ${rejectionReason}</p>
+      <div class="alert-box" style="margin-top: 0; margin-bottom: 16px; text-align: left; padding: 12px;">
+        <p style="margin:0; font-weight: 600; font-size: 15px;">Reason for rejection:</p>
+        <p style="margin-top: 4px; margin-bottom:0; font-size: 15px;">${rejectionReason}</p>
       </div>
       `
           : ""
@@ -736,15 +980,15 @@ class MailService {
       
       ${
         additionalInfo
-          ? `<div class="info-box"><p>${additionalInfo}</p></div>`
+          ? `<div class="info-box" style="margin-top: 0; margin-bottom: 16px; text-align: left; padding: 12px;"><p style="margin:0; font-size: 15px;">${additionalInfo}</p></div>`
           : ""
       }
       
-      <div style="text-align: center;">
+      <div style="text-align: left; margin-top: 16px; margin-bottom: 16px;">
         <a href="${buttonUrl}" class="button">${buttonText}</a>
       </div>
       
-      <p>For any questions about your withdrawal, please contact us at <a href="mailto:support@ecohavest.org">support@ecohavest.org</a></p>
+      <p style="text-align: left; font-size: 14px; color: #64748b; margin-top: 20px;">For any questions about your withdrawal, please contact us at <a href="mailto:support@ecohavest.org">support@ecohavest.org</a></p>
     </div>
     `;
 

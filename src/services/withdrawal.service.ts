@@ -220,12 +220,16 @@ export class WithdrawalService {
     // Send email notification
     const userRecord = await this.getUserById(userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendWithdrawalNotification(
-        userRecord.email,
+      mailService.sendWithdrawalNotification({
+        name: userRecord.name,
+        email: userRecord.email,
         amount,
         currency,
-        "PENDING"
-      );
+        status: "PENDING",
+        method: "CRYPTO",
+        date: new Date(),
+        address: destinationAddress,
+      });
     }
 
     return result;
@@ -258,12 +262,17 @@ export class WithdrawalService {
 
     const userRecord = await this.getUserById(userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendWithdrawalNotification(
-        userRecord.email,
+      mailService.sendWithdrawalNotification({
+        name: userRecord.name,
+        email: userRecord.email,
         amount,
-        "USD",
-        "PENDING"
-      );
+        currency,
+        status: "PENDING",
+        method: "CASHAPP",
+        date: new Date(),
+        cashtag,
+        cashappName,
+      });
     }
 
     return result;
@@ -296,12 +305,17 @@ export class WithdrawalService {
 
     const userRecord = await this.getUserById(userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendWithdrawalNotification(
-        userRecord.email,
+      mailService.sendWithdrawalNotification({
+        name: userRecord.name,
+        email: userRecord.email,
         amount,
-        "USD",
-        "PENDING"
-      );
+        currency,
+        status: "PENDING",
+        method: "PAYPAL",
+        date: new Date(),
+        paypalEmail,
+        paypalName,
+      });
     }
 
     return result; 
@@ -336,12 +350,18 @@ export class WithdrawalService {
 
     const userRecord = await this.getUserById(userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendWithdrawalNotification(
-        userRecord.email,
+      mailService.sendWithdrawalNotification({
+        name: userRecord.name,
+        email: userRecord.email,
         amount,
-        "USD",
-        "PENDING"
-      );
+        currency,
+        status: "PENDING",
+        method: "BANK TRANSFER",
+        date: new Date(),
+        bankName,
+        bankAccountNumber,
+        bankAccountName,
+      });
     }
 
     return result;
@@ -384,12 +404,16 @@ export class WithdrawalService {
     // Send email notification
     const userRecord = await this.getUserById(withdrawalRecord.userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendWithdrawalNotification(
-        userRecord.email,
-        withdrawalRecord.amount,
-        withdrawalRecord.currency,
-        "APPROVED"
-      );
+      mailService.sendWithdrawalNotification({
+        name: userRecord.name,
+        email: userRecord.email,
+        amount: withdrawalRecord.amount,
+        currency: withdrawalRecord.currency,
+        status: "APPROVED",
+        method: "CRYPTO",
+        date: new Date(),
+        address: withdrawalRecord.destinationAddress,
+      });
     }
 
     return result;
@@ -428,12 +452,17 @@ export class WithdrawalService {
 
     const userRecord = await this.getUserById(withdrawalRecord.userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendWithdrawalNotification(
-        userRecord.email,
-        withdrawalRecord.amount,
-        "USD",
-        "APPROVED"
-      );
+      mailService.sendWithdrawalNotification({
+        name: userRecord.name,
+        email: userRecord.email,
+        amount: withdrawalRecord.amount,
+        currency: withdrawalRecord.currency,
+        status: "APPROVED",
+        method: "CASHAPP",
+        date: new Date(),
+        cashtag: withdrawalRecord.cashtag,
+        cashappName: withdrawalRecord.cashappName,
+      });
     }
 
     return result;
@@ -472,12 +501,17 @@ export class WithdrawalService {
 
     const userRecord = await this.getUserById(withdrawalRecord.userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendWithdrawalNotification(
-        userRecord.email,
-        withdrawalRecord.amount,
-        "USD",
-        "APPROVED"
-      );
+      mailService.sendWithdrawalNotification({
+        name: userRecord.name,
+        email: userRecord.email,
+        amount: withdrawalRecord.amount,
+        currency: withdrawalRecord.currency,
+        status: "APPROVED",
+        method: "PAYPAL",
+        date: new Date(),
+        paypalEmail: withdrawalRecord.paypalEmail,
+        paypalName: withdrawalRecord.paypalName,
+      });
     }
 
     return result;
@@ -516,12 +550,18 @@ export class WithdrawalService {
 
     const userRecord = await this.getUserById(withdrawalRecord.userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendWithdrawalNotification(
-        userRecord.email,
-        withdrawalRecord.amount,
-        "USD",
-        "APPROVED"
-      );
+      mailService.sendWithdrawalNotification({
+        name: userRecord.name,
+        email: userRecord.email,
+        amount: withdrawalRecord.amount,
+        currency: withdrawalRecord.currency,
+        status: "APPROVED",
+        method: "BANK TRANSFER",
+        date: new Date(),
+        bankName: withdrawalRecord.bankName,
+        bankAccountNumber: withdrawalRecord.bankAccountNumber,
+        bankAccountName: withdrawalRecord.bankAccountName,
+      });
     }
   }
 
@@ -550,13 +590,16 @@ export class WithdrawalService {
     // Send email notification
     const userRecord = await this.getUserById(withdrawalRecord.userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendWithdrawalNotification(
-        userRecord.email,
-        withdrawalRecord.amount,
-        withdrawalRecord.currency,
-        "REJECTED",
-        rejectionReason
-      );
+      mailService.sendWithdrawalNotification({
+        name: userRecord.name,
+        email: userRecord.email,
+        amount: withdrawalRecord.amount,
+        currency: withdrawalRecord.currency,
+        status: "REJECTED",
+        method: "CRYPTO",
+        date: new Date(),
+        rejectionReason,
+      });
     }
 
     return result;
@@ -586,13 +629,18 @@ export class WithdrawalService {
 
     const userRecord = await this.getUserById(withdrawalRecord.userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendWithdrawalNotification(
-        userRecord.email,
-        withdrawalRecord.amount,
-        "USD",
-        "REJECTED",
-        rejectionReason
-      );
+      mailService.sendWithdrawalNotification({
+        name: userRecord.name,
+        email: userRecord.email,
+        amount: withdrawalRecord.amount,
+        currency: withdrawalRecord.currency,
+        status: "REJECTED",
+        method: "CASHAPP",
+        date: new Date(),
+        cashtag: withdrawalRecord.cashtag,
+        cashappName: withdrawalRecord.cashappName,
+        rejectionReason,
+      });
     }
 
     return result;
@@ -622,13 +670,18 @@ export class WithdrawalService {
 
     const userRecord = await this.getUserById(withdrawalRecord.userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendWithdrawalNotification(
-        userRecord.email,
-        withdrawalRecord.amount,
-        "USD",
-        "REJECTED",
-        rejectionReason
-      );
+      mailService.sendWithdrawalNotification({
+        name: userRecord.name,
+        email: userRecord.email,
+        amount: withdrawalRecord.amount,
+        currency: withdrawalRecord.currency,
+        status: "REJECTED",
+        method: "PAYPAL",
+        date: new Date(),
+        paypalEmail: withdrawalRecord.paypalEmail,
+        paypalName: withdrawalRecord.paypalName,
+        rejectionReason,
+      });
     }
 
     return result;
@@ -658,13 +711,19 @@ export class WithdrawalService {
 
     const userRecord = await this.getUserById(withdrawalRecord.userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendWithdrawalNotification(
-        userRecord.email,
-        withdrawalRecord.amount,
-        "USD",
-        "REJECTED",
-        rejectionReason
-      );
+      mailService.sendWithdrawalNotification({
+        name: userRecord.name,
+        email: userRecord.email,
+        amount: withdrawalRecord.amount,
+        currency: withdrawalRecord.currency,
+        status: "REJECTED",
+        method: "BANK TRANSFER",
+        date: new Date(),
+        bankName: withdrawalRecord.bankName,
+        bankAccountNumber: withdrawalRecord.bankAccountNumber,
+        bankAccountName: withdrawalRecord.bankAccountName,
+        rejectionReason,
+      });
     }
 
     return result;

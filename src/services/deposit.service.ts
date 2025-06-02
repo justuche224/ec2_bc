@@ -147,12 +147,14 @@ export class DepositService {
     // Get user email for notification
     const userRecord = await this.getUserById(userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendDepositNotification(
-        userRecord.email,
+      mailService.sendDepositNotification({
+        email: userRecord.email,
         amount,
         currency,
-        "PENDING"
-      );
+        status: "PENDING",
+        method: "CRYPTO",
+        date: new Date(),
+      });
     }
 
     return result;
@@ -544,12 +546,14 @@ export class DepositService {
     // Send email notification
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendDepositNotification(
-        userRecord.email,
-        depositRecord.amount,
-        depositRecord.currency,
-        "APPROVED"
-      );
+      mailService.sendDepositNotification({
+        email: userRecord.email,
+        amount: depositRecord.amount,
+        currency: depositRecord.currency,
+        status: "APPROVED",
+        method: "CRYPTO",
+        date: new Date(),
+      });
     }
 
     return result;
@@ -588,12 +592,14 @@ export class DepositService {
 
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendDepositNotification(
-        userRecord.email,
-        depositRecord.amount,
-        "USD",
-        "APPROVED"
-      );
+      mailService.sendDepositNotification({
+        email: userRecord.email,
+        amount: depositRecord.amount,
+        currency: "USD",
+        status: "APPROVED",
+        method: "CASHAPP",
+        date: new Date(),
+      });
     }
 
     return result;
@@ -629,12 +635,14 @@ export class DepositService {
 
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendDepositNotification(
-        userRecord.email,
-        depositRecord.amount,
-        "USD",
-        "APPROVED"
-      );
+      mailService.sendDepositNotification({
+        email: userRecord.email,
+        amount: depositRecord.amount,
+        currency: "USD",
+        status: "APPROVED",
+        method: "PAYPAL",
+        date: new Date(),
+      });
     }
 
     return result;
@@ -670,12 +678,14 @@ export class DepositService {
 
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendDepositNotification(
-        userRecord.email,
-        depositRecord.amount,
-        "USD",
-        "APPROVED"
-      );
+      mailService.sendDepositNotification({
+        email: userRecord.email,
+        amount: depositRecord.amount,
+        currency: "USD",
+        status: "APPROVED",
+        method: "BANK TRANSFER",
+        date: new Date(),
+      });
     }
 
     return result;
@@ -706,12 +716,14 @@ export class DepositService {
     // Send email notification
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {
-      mailService.sendDepositNotification(
-        userRecord.email,
-        depositRecord.amount,
-        depositRecord.currency,
-        "REJECTED"
-      );
+      mailService.sendDepositNotification({
+        email: userRecord.email,
+        amount: depositRecord.amount,
+        currency: depositRecord.currency,
+        status: "REJECTED",
+        method: "CRYPTO",
+        date: new Date(),
+      });
     }
 
     return result;
@@ -740,12 +752,14 @@ export class DepositService {
 
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {
-      mailService.sendDepositNotification(
-        userRecord.email,
-        depositRecord.amount,
-        "USD",
-        "REJECTED"
-      );
+      mailService.sendDepositNotification({
+        email: userRecord.email,
+        amount: depositRecord.amount,
+        currency: "USD",
+        status: "REJECTED",
+        method: "CASHAPP",
+        date: new Date(),
+      });
     }
 
     return result;
@@ -771,12 +785,14 @@ export class DepositService {
 
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {
-      mailService.sendDepositNotification(
-        userRecord.email,
-        depositRecord.amount,
-        "USD",
-        "REJECTED"
-      );
+      mailService.sendDepositNotification({
+        email: userRecord.email,
+        amount: depositRecord.amount,
+        currency: "USD",
+        status: "REJECTED",
+        method: "PAYPAL",
+        date: new Date(),
+      });
     }
 
     return result;
@@ -802,12 +818,14 @@ export class DepositService {
 
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {
-      mailService.sendDepositNotification(
-        userRecord.email,
-        depositRecord.amount,
-        "USD",
-        "REJECTED"
-      );
+      mailService.sendDepositNotification({
+        email: userRecord.email,
+        amount: depositRecord.amount,
+        currency: "USD",
+        status: "REJECTED",
+        method: "BANK TRANSFER",
+        date: new Date(),
+      });
     }
 
     return result;
@@ -838,12 +856,14 @@ export class DepositService {
     // Send email notification
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {
-      await mailService.sendDepositNotification(
-        userRecord.email,
-        depositRecord.amount,
-        depositRecord.currency,
-        "FAILED"
-      );
+      mailService.sendDepositNotification({
+        email: userRecord.email,
+        amount: depositRecord.amount,
+        currency: depositRecord.currency,
+        status: "FAILED",
+        method: "CRYPTO",
+        date: new Date(),
+      });
     }
 
     return result;
@@ -873,12 +893,14 @@ export class DepositService {
 
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {
-      mailService.sendDepositNotification(
-        userRecord.email,
-        depositRecord.amount,
-        "USD",
-        "FAILED"
-      );
+      mailService.sendDepositNotification({
+        email: userRecord.email,
+        amount: depositRecord.amount,
+        currency: "USD",
+        status: "FAILED",
+        method: "CASHAPP",
+        date: new Date(),
+      });
     }
 
     return result;
@@ -904,12 +926,14 @@ export class DepositService {
 
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {
-      mailService.sendDepositNotification(
-        userRecord.email,
-        depositRecord.amount,
-        "USD",
-        "FAILED"
-      );
+      mailService.sendDepositNotification({
+        email: userRecord.email,
+        amount: depositRecord.amount,
+        currency: "USD",
+        status: "FAILED",
+        method: "PAYPAL",
+        date: new Date(),
+      });
     }
 
     return result;
@@ -935,12 +959,14 @@ export class DepositService {
 
     const userRecord = await this.getUserById(depositRecord.userId);
     if (userRecord && userRecord.email) {
-      mailService.sendDepositNotification(
-        userRecord.email,
-        depositRecord.amount,
-        "USD",
-        "FAILED"
-      );
+      mailService.sendDepositNotification({
+        email: userRecord.email,
+        amount: depositRecord.amount,
+        currency: "USD",
+        status: "FAILED",
+        method: "BANK TRANSFER",
+        date: new Date(),
+      });
     }
 
     return result;
