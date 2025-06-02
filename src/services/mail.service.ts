@@ -872,7 +872,7 @@ class MailService {
         <p><strong>Wallet Address:</strong> ${address}</p>
       `;
     } else if (
-      method === "BANK" &&
+      (method === "BANK" || method === "BANK TRANSFER") &&
       bankName &&
       bankAccountName &&
       bankAccountNumber
