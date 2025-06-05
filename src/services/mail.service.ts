@@ -368,8 +368,8 @@ class MailService {
   async sendCashappDepositInstructions(
     email: string,
     amount: string,
-    cashtag: string,
-    cashappName: string,
+    adminCashtag: string,
+    adminCashappName: string,
     depositId: string
   ): Promise<void> {
     const subject = "Cashapp Deposit Instructions";
@@ -380,8 +380,8 @@ class MailService {
       <ol>
         <li>Open Cashapp and tap the + button in the top right corner.</li>
         <li>Select "Pay" and then "Pay Cash" or "Pay Cash Tag".</li>
-        <li>Enter the amount ${amount} and the cash tag $ecohavest.</li>
-        <li>Enter the name EcoHarvest as the recipient.</li>
+        <li>Enter the amount <strong style="color: #16a34a;">${amount}</strong> and the cash tag <strong style="color: #16a34a;">${adminCashtag}</strong>.</li>
+        <li>Enter the name <strong style="color: #16a34a;">${adminCashappName}</strong> as the recipient.</li>
         <li>Tap "Pay" to complete the transaction.</li>
       </ol>
       <div>
@@ -408,8 +408,8 @@ class MailService {
   async sendPaypalDepositInstructions(
     email: string,
     amount: string,
-    paypalEmail: string,
-    paypalName: string,
+    adminPaypalEmail: string,
+    adminPaypalName: string,
     depositId: string
   ) {
     const subject = "Paypal Deposit Instructions";
@@ -420,8 +420,8 @@ class MailService {
       <ol>
         <li>Open Paypal and tap the + button in the top right corner.</li>
         <li>Select "Pay" and then "Pay Paypal" or "Pay Paypal Email".</li>
-        <li>Enter the amount ${amount} and the paypal email pay@ecohavest.org.</li>
-        <li>Enter the name EcoHarvest as the recipient.</li>
+        <li>Enter the amount <strong style="color: #16a34a;">${amount}</strong> and the paypal email <strong style="color: #16a34a;">${adminPaypalEmail}</strong>.</li>
+        <li>Enter the name <strong style="color: #16a34a;">${adminPaypalName}</strong> as the recipient.</li>
         <li>Tap "Pay" to complete the transaction.</li>
       </ol>
       <div>
@@ -448,9 +448,9 @@ class MailService {
   async sendBankDepositInstructions(
     email: string,
     amount: string,
-    bankName: string,
-    bankAccountName: string,
-    bankAccountNumber: string,
+    adminBankName: string,
+    adminBankAccountName: string,
+    adminBankAccountNumber: string,
     depositId: string
   ): Promise<void> {
     const subject = "Bank Deposit Instructions";
@@ -461,8 +461,9 @@ class MailService {
       <ol>
         <li>Go to your bank's mobile app or online banking platform.</li>
         <li>Select "Transfer" or "Send Money" and then "Bank Transfer".</li>
-        <li>Enter the amount ${amount} and the bank account number 0865680000.</li>
-        <li>Enter the name EcoHarvest as the recipient.</li>
+        <li>Enter the amount <strong style="color: #16a34a;">${amount}</strong> and the bank account number <strong style="color: #16a34a;">${adminBankAccountNumber}</strong>.</li>
+        <li>Enter the bank name <strong style="color: #16a34a;">${adminBankName}</strong> as the recipient.</li>
+        <li>Enter the name <strong style="color: #16a34a;">${adminBankAccountName}</strong> as the recipient.</li>
         <li>Tap "Transfer" to complete the transaction.</li>
       </ol>
       <div>

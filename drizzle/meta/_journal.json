@@ -71,6 +71,20 @@
       "when": 1748810827400,
       "tag": "0009_woozy_lionheart",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1749145354203,
+      "tag": "0010_sloppy_katie_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1749145495468,
+      "tag": "0011_flawless_eternals",
+      "breakpoints": true
     }
   ]
 }

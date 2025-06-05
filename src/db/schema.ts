@@ -10,7 +10,6 @@ import {
   doublePrecision,
 } from "drizzle-orm/pg-core";
 
-// Define enums first
 export const roleEnum = pgEnum("role", ["ADMIN", "USER"]);
 export const documentTypeEnum = pgEnum("document_type", [
   "ID_CARD",
@@ -292,8 +291,11 @@ export const cashapp = pgTable("cashapp", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   amount: varchar("amount", { length: 255 }).notNull(),
-  cashtag:  text("cashtag").notNull(),
+  cashtag: text("cashtag").notNull(),
   cashappName: text("cashapp_name").notNull(),
+  adminCashtag: text("admin_cashtag"),
+  adminCashappName: text("admin_cashapp_name"),
+  instructionsSent: boolean("instructions_sent").notNull().default(false),
   paymentProof: text("payment_proof"),
   status: statusEnum("status").notNull().default("PENDING"),
   rejectionReason: text("rejection_reason"),
@@ -311,8 +313,11 @@ export const paypal = pgTable("paypal", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   amount: varchar("amount", { length: 255 }).notNull(),
-  paypalEmail:  text("paypal_email").notNull(),
+  paypalEmail: text("paypal_email").notNull(),
   paypalName: text("paypal_name").notNull(),
+  adminPaypalEmail: text("admin_paypal_email"),
+  adminPaypalName: text("admin_paypal_name"),
+  instructionsSent: boolean("instructions_sent").notNull().default(false),
   paymentProof: text("payment_proof"),
   status: statusEnum("status").notNull().default("PENDING"),
   rejectionReason: text("rejection_reason"),
@@ -333,6 +338,10 @@ export const bank = pgTable("bank", {
   bankName: text("bank_name").notNull(),
   bankAccountNumber: text("bank_account_number").notNull(),
   bankAccountName: text("bank_account_name").notNull(),
+  adminBankName: text("admin_bank_name"),
+  adminBankAccountNumber: text("admin_bank_account_number"),
+  adminBankAccountName: text("admin_bank_account_name"),
+  instructionsSent: boolean("instructions_sent").notNull().default(false),
   paymentProof: text("payment_proof"),
   status: statusEnum("status").notNull().default("PENDING"),
   rejectionReason: text("rejection_reason"),
@@ -435,7 +444,6 @@ export const bankWithdrawal = pgTable("bank_withdrawal", {
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
 });
-
 
 export const withdrawalRelations = relations(withdrawal, ({ one }) => ({
   user: one(user, {

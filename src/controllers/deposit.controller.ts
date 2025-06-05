@@ -142,7 +142,9 @@ export class DepositController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to get paypal deposits",
+            error instanceof Error
+              ? error.message
+              : "Failed to get paypal deposits",
         },
         500
       );
@@ -162,7 +164,9 @@ export class DepositController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to get bank deposits",
+            error instanceof Error
+              ? error.message
+              : "Failed to get bank deposits",
         },
         500
       );
@@ -276,7 +280,8 @@ export class DepositController {
       if (!user) {
         return c.json({ error: "Unauthorized: No user found" }, 401);
       }
-      const { amount, bankName, bankAccountName, bankAccountNumber } = await c.req.json();
+      const { amount, bankName, bankAccountName, bankAccountNumber } =
+        await c.req.json();
       if (!amount || !bankName || !bankAccountName || !bankAccountNumber) {
         return c.json({ error: "Missing required fields" }, 400);
       }
@@ -293,7 +298,9 @@ export class DepositController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to create bank deposit",
+            error instanceof Error
+              ? error.message
+              : "Failed to create bank deposit",
         },
         500
       );
@@ -505,7 +512,9 @@ export class DepositController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to upload paypal deposit proof",
+            error instanceof Error
+              ? error.message
+              : "Failed to upload paypal deposit proof",
         },
         500
       );
@@ -535,7 +544,9 @@ export class DepositController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to upload bank deposit proof",
+            error instanceof Error
+              ? error.message
+              : "Failed to upload bank deposit proof",
         },
         500
       );
@@ -625,7 +636,9 @@ export class DepositController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to approve paypal deposit",
+            error instanceof Error
+              ? error.message
+              : "Failed to approve paypal deposit",
         },
         500
       );
@@ -646,7 +659,9 @@ export class DepositController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to approve bank deposit",
+            error instanceof Error
+              ? error.message
+              : "Failed to approve bank deposit",
         },
         500
       );
@@ -737,7 +752,9 @@ export class DepositController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to reject paypal deposit",
+            error instanceof Error
+              ? error.message
+              : "Failed to reject paypal deposit",
         },
         500
       );
@@ -765,7 +782,9 @@ export class DepositController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to reject bank deposit",
+            error instanceof Error
+              ? error.message
+              : "Failed to reject bank deposit",
         },
         500
       );
@@ -823,7 +842,9 @@ export class DepositController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to mark paypal deposit as failed",
+            error instanceof Error
+              ? error.message
+              : "Failed to mark paypal deposit as failed",
         },
         500
       );
@@ -851,7 +872,9 @@ export class DepositController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to mark bank deposit as failed",
+            error instanceof Error
+              ? error.message
+              : "Failed to mark bank deposit as failed",
         },
         500
       );
@@ -885,6 +908,178 @@ export class DepositController {
             error instanceof Error
               ? error.message
               : "Failed to mark deposit as failed",
+        },
+        500
+      );
+    }
+  }
+
+  // Admin methods to assign payment details and send instructions
+  static async assignCashappDetails(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Unauthorized: Admin access required" }, 403);
+      }
+
+      const depositId = c.req.param("id");
+      const { adminCashtag, adminCashappName } = await c.req.json();
+
+      if (!adminCashtag || !adminCashappName) {
+        return c.json(
+          {
+            error: "Admin cashtag and cashapp name are required",
+          },
+          400
+        );
+      }
+
+      const result = await depositService.assignCashappDetails(
+        depositId,
+        adminCashtag,
+        adminCashappName
+      );
+
+      return c.json(result, 200);
+    } catch (error) {
+      console.error("Error assigning cashapp details:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to assign cashapp details",
+        },
+        500
+      );
+    }
+  }
+
+  static async assignPaypalDetails(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Unauthorized: Admin access required" }, 403);
+      }
+
+      const depositId = c.req.param("id");
+      const { adminPaypalEmail, adminPaypalName } = await c.req.json();
+
+      if (!adminPaypalEmail || !adminPaypalName) {
+        return c.json(
+          {
+            error: "Admin paypal email and name are required",
+          },
+          400
+        );
+      }
+
+      const result = await depositService.assignPaypalDetails(
+        depositId,
+        adminPaypalEmail,
+        adminPaypalName
+      );
+
+      return c.json(result, 200);
+    } catch (error) {
+      console.error("Error assigning paypal details:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to assign paypal details",
+        },
+        500
+      );
+    }
+  }
+
+  static async assignBankDetails(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Unauthorized: Admin access required" }, 403);
+      }
+
+      const depositId = c.req.param("id");
+      const { adminBankName, adminBankAccountName, adminBankAccountNumber } =
+        await c.req.json();
+
+      if (!adminBankName || !adminBankAccountName || !adminBankAccountNumber) {
+        return c.json(
+          {
+            error:
+              "Admin bank name, account name, and account number are required",
+          },
+          400
+        );
+      }
+
+      const result = await depositService.assignBankDetails(
+        depositId,
+        adminBankName,
+        adminBankAccountName,
+        adminBankAccountNumber
+      );
+
+      return c.json(result, 200);
+    } catch (error) {
+      console.error("Error assigning bank details:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to assign bank details",
+        },
+        500
+      );
+    }
+  }
+
+  static async getDepositsPendingInstructions(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Unauthorized: Admin access required" }, 403);
+      }
+
+      const deposits = await depositService.getDepositsPendingInstructions();
+      return c.json({ data: deposits }, 200);
+    } catch (error) {
+      console.error("Error getting deposits pending instructions:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to get deposits",
+        },
+        500
+      );
+    }
+  }
+
+  static async getDetailedDepositsPendingInstructions(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Unauthorized: Admin access required" }, 403);
+      }
+
+      const deposits =
+        await depositService.getDetailedDepositsPendingInstructions();
+      return c.json({ data: deposits }, 200);
+    } catch (error) {
+      console.error(
+        "Error getting detailed deposits pending instructions:",
+        error
+      );
+      return c.json(
+        {
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to get detailed deposits",
         },
         500
       );

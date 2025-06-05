@@ -52,7 +52,7 @@ importers:
         specifier: ^29.5.14
         version: 29.5.14
       '@types/node':
-        specifier: ^20.17.46
+        specifier: ^20.17.47
         version: 20.17.47
       '@types/nodemailer':
         specifier: ^6.4.17

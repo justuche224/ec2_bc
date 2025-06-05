@@ -68,6 +68,9 @@ export class DepositService {
           name: user.name,
           email: user.email,
         },
+        assignedDepositTag: cashapp.adminCashtag,
+        assignedDepositName: cashapp.adminCashappName,
+        instructionsSent: cashapp.instructionsSent,
       })
       .from(cashapp)
       .leftJoin(user, eq(cashapp.userId, user.id))
@@ -94,6 +97,9 @@ export class DepositService {
           name: user.name,
           email: user.email,
         },
+        assignedDepositEmail: paypal.adminPaypalEmail,
+        assignedDepositName: paypal.adminPaypalName,
+        instructionsSent: paypal.instructionsSent,
       })
       .from(paypal)
       .leftJoin(user, eq(paypal.userId, user.id))
@@ -121,12 +127,15 @@ export class DepositService {
           name: user.name,
           email: user.email,
         },
+        assignedDepositBankName: bank.adminBankName,
+        assignedDepositAccountName: bank.adminBankAccountName,
+        assignedDepositAccountNumber: bank.adminBankAccountNumber,
+        instructionsSent: bank.instructionsSent,
       })
       .from(bank)
       .leftJoin(user, eq(bank.userId, user.id))
       .orderBy(desc(bank.createdAt));
   }
-  
 
   async createDeposit(
     userId: string,
@@ -181,15 +190,8 @@ export class DepositService {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    if (userRecord && userRecord.email) {
-      mailService.sendCashappDepositInstructions(
-        userRecord.email,
-        amount,
-        cashtag,
-        cashappName,
-        id
-      );
-    }
+
+    // Note: Email will be sent after admin assigns payment details
     return result;
   }
 
@@ -214,15 +216,8 @@ export class DepositService {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    if (userRecord && userRecord.email) {
-      mailService.sendPaypalDepositInstructions(
-        userRecord.email,
-        amount,
-        paypalEmail,
-        paypalName,
-        id
-      );
-    }
+
+    // Note: Email will be sent after admin assigns payment details
     return result;
   }
 
@@ -249,16 +244,8 @@ export class DepositService {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    if (userRecord && userRecord.email) {
-      mailService.sendBankDepositInstructions(
-        userRecord.email,
-        amount,
-        bankName,
-        bankAccountName,
-        bankAccountNumber,
-        id
-      );
-    }
+
+    // Note: Email will be sent after admin assigns payment details
     return result;
   }
 
@@ -318,7 +305,7 @@ export class DepositService {
       .select()
       .from(paypal)
       .where(eq(paypal.id, depositId))
-      .limit(1); 
+      .limit(1);
     return depositRecord[0] || null;
   }
 
@@ -454,10 +441,7 @@ export class DepositService {
     proofFile: File,
     userId: string
   ) {
-    const depositRecord = await this.getUserBankDepositById(
-      depositId,
-      userId
-    );
+    const depositRecord = await this.getUserBankDepositById(depositId, userId);
     if (!depositRecord) {
       throw new Error("Deposit not found");
     }
@@ -611,7 +595,9 @@ export class DepositService {
       throw new Error("Deposit not found");
     }
     if (depositRecord.status !== "PROCESSING") {
-      throw new Error(`Cannot approve deposit with status: ${depositRecord.status}`);
+      throw new Error(
+        `Cannot approve deposit with status: ${depositRecord.status}`
+      );
     }
 
     const result = await db.transaction(async (tx) => {
@@ -654,7 +640,9 @@ export class DepositService {
       throw new Error("Deposit not found");
     }
     if (depositRecord.status !== "PROCESSING") {
-      throw new Error(`Cannot approve deposit with status: ${depositRecord.status}`);
+      throw new Error(
+        `Cannot approve deposit with status: ${depositRecord.status}`
+      );
     }
 
     const result = await db.transaction(async (tx) => {
@@ -771,7 +759,9 @@ export class DepositService {
       throw new Error("Deposit not found");
     }
     if (depositRecord.status !== "PROCESSING") {
-      throw new Error(`Cannot reject deposit with status: ${depositRecord.status}`);
+      throw new Error(
+        `Cannot reject deposit with status: ${depositRecord.status}`
+      );
     }
     const result = await db
       .update(paypal)
@@ -804,13 +794,15 @@ export class DepositService {
       throw new Error("Deposit not found");
     }
     if (depositRecord.status !== "PROCESSING") {
-      throw new Error(`Cannot reject deposit with status: ${depositRecord.status}`);  
+      throw new Error(
+        `Cannot reject deposit with status: ${depositRecord.status}`
+      );
     }
     const result = await db
       .update(bank)
       .set({
         status: "REJECTED",
-          rejectionReason,
+        rejectionReason,
         rejectedAt: new Date(),
         updatedAt: new Date(),
       })
@@ -912,7 +904,9 @@ export class DepositService {
       throw new Error("Deposit not found");
     }
     if (depositRecord.status !== "PROCESSING") {
-      throw new Error(`Cannot mark as failed deposit with status: ${depositRecord.status}`);
+      throw new Error(
+        `Cannot mark as failed deposit with status: ${depositRecord.status}`
+      );
     }
     const result = await db
       .update(paypal)
@@ -945,7 +939,9 @@ export class DepositService {
       throw new Error("Deposit not found");
     }
     if (depositRecord.status !== "PROCESSING") {
-      throw new Error(`Cannot mark as failed deposit with status: ${depositRecord.status}`);
+      throw new Error(
+        `Cannot mark as failed deposit with status: ${depositRecord.status}`
+      );
     }
     const result = await db
       .update(bank)
@@ -1030,5 +1026,278 @@ export class DepositService {
       .limit(1);
 
     return userRecord[0] || null;
+  }
+
+  async assignCashappDetails(
+    depositId: string,
+    adminCashtag: string,
+    adminCashappName: string
+  ) {
+    const depositRecord = await this.getCashappDepositById(depositId);
+    if (!depositRecord) {
+      throw new Error("Deposit not found");
+    }
+
+    if (depositRecord.status !== "PENDING") {
+      throw new Error("Can only assign details to pending deposits");
+    }
+
+    // Update deposit with admin-assigned payment details
+    await db
+      .update(cashapp)
+      .set({
+        updatedAt: new Date(),
+        adminCashtag,
+        adminCashappName,
+      })
+      .where(eq(cashapp.id, depositId));
+
+    // Get user details for email
+    const userRecord = await this.getUserById(depositRecord.userId);
+    if (userRecord && userRecord.email) {
+      await mailService.sendCashappDepositInstructions(
+        userRecord.email,
+        depositRecord.amount,
+        adminCashtag,
+        adminCashappName,
+        depositId
+      );
+
+      await db
+        .update(cashapp)
+        .set({
+          instructionsSent: true,
+        })
+        .where(eq(cashapp.id, depositId));
+    }
+
+    return {
+      success: true,
+      message: "Cashapp details assigned and instructions sent",
+    };
+  }
+
+  async assignPaypalDetails(
+    depositId: string,
+    adminPaypalEmail: string,
+    adminPaypalName: string
+  ) {
+    const depositRecord = await this.getPaypalDepositById(depositId);
+    if (!depositRecord) {
+      throw new Error("Deposit not found");
+    }
+
+    if (depositRecord.status !== "PENDING") {
+      throw new Error("Can only assign details to pending deposits");
+    }
+
+    // Update deposit with admin-assigned payment details
+    await db
+      .update(paypal)
+      .set({
+        adminPaypalEmail,
+        adminPaypalName,
+        updatedAt: new Date(),
+      })
+      .where(eq(paypal.id, depositId));
+
+    // Get user details for email
+    const userRecord = await this.getUserById(depositRecord.userId);
+    if (userRecord && userRecord.email) {
+      await mailService.sendPaypalDepositInstructions(
+        userRecord.email,
+        depositRecord.amount,
+        adminPaypalEmail,
+        adminPaypalName,
+        depositId
+      );
+
+      await db
+        .update(paypal)
+        .set({
+          instructionsSent: true,
+        })
+        .where(eq(paypal.id, depositId));
+    }
+
+    return {
+      success: true,
+      message: "Paypal details assigned and instructions sent",
+    };
+  }
+
+  async assignBankDetails(
+    depositId: string,
+    adminBankName: string,
+    adminBankAccountName: string,
+    adminBankAccountNumber: string
+  ) {
+    const depositRecord = await this.getBankDepositById(depositId);
+    if (!depositRecord) {
+      throw new Error("Deposit not found");
+    }
+
+    if (depositRecord.status !== "PENDING") {
+      throw new Error("Can only assign details to pending deposits");
+    }
+
+    // Update deposit with admin-assigned payment details
+    await db
+      .update(bank)
+      .set({
+        updatedAt: new Date(),
+        adminBankName,
+        adminBankAccountName,
+        adminBankAccountNumber,
+      })
+      .where(eq(bank.id, depositId));
+
+    // Get user details for email
+    const userRecord = await this.getUserById(depositRecord.userId);
+    if (userRecord && userRecord.email) {
+      await mailService.sendBankDepositInstructions(
+        userRecord.email,
+        depositRecord.amount,
+        adminBankName,
+        adminBankAccountName,
+        adminBankAccountNumber,
+        depositId
+      );
+
+      await db
+        .update(bank)
+        .set({
+          instructionsSent: true,
+        })
+        .where(eq(bank.id, depositId));
+    }
+
+    return {
+      success: true,
+      message: "Bank details assigned and instructions sent",
+    };
+  }
+
+  // Get deposits pending instructions grouped by type
+  async getDepositsPendingInstructions() {
+    // Get cashapp deposits pending instructions
+    const cashappPending = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(cashapp)
+      .where(
+        and(eq(cashapp.status, "PENDING"), eq(cashapp.instructionsSent, false))
+      );
+
+    // Get paypal deposits pending instructions
+    const paypalPending = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(paypal)
+      .where(
+        and(eq(paypal.status, "PENDING"), eq(paypal.instructionsSent, false))
+      );
+
+    // Get bank deposits pending instructions
+    const bankPending = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(bank)
+      .where(and(eq(bank.status, "PENDING"), eq(bank.instructionsSent, false)));
+
+    const cashappCount = Number(cashappPending[0]?.count || 0);
+    const paypalCount = Number(paypalPending[0]?.count || 0);
+    const bankCount = Number(bankPending[0]?.count || 0);
+
+    return {
+      cashapp: cashappCount,
+      paypal: paypalCount,
+      bank: bankCount,
+      total: cashappCount + paypalCount + bankCount,
+    };
+  }
+
+  // Get detailed list of deposits pending instructions
+  async getDetailedDepositsPendingInstructions() {
+    // Get cashapp deposits pending instructions
+    const cashappDeposits = await db
+      .select({
+        id: cashapp.id,
+        userId: cashapp.userId,
+        amount: cashapp.amount,
+        cashtag: cashapp.cashtag,
+        cashappName: cashapp.cashappName,
+        status: cashapp.status,
+        createdAt: cashapp.createdAt,
+        type: sql<string>`'cashapp'`,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      })
+      .from(cashapp)
+      .leftJoin(user, eq(cashapp.userId, user.id))
+      .where(
+        and(eq(cashapp.status, "PENDING"), eq(cashapp.instructionsSent, false))
+      )
+      .orderBy(desc(cashapp.createdAt));
+
+    // Get paypal deposits pending instructions
+    const paypalDeposits = await db
+      .select({
+        id: paypal.id,
+        userId: paypal.userId,
+        amount: paypal.amount,
+        paypalEmail: paypal.paypalEmail,
+        paypalName: paypal.paypalName,
+        status: paypal.status,
+        createdAt: paypal.createdAt,
+        type: sql<string>`'paypal'`,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      })
+      .from(paypal)
+      .leftJoin(user, eq(paypal.userId, user.id))
+      .where(
+        and(eq(paypal.status, "PENDING"), eq(paypal.instructionsSent, false))
+      )
+      .orderBy(desc(paypal.createdAt));
+
+    // Get bank deposits pending instructions
+    const bankDeposits = await db
+      .select({
+        id: bank.id,
+        userId: bank.userId,
+        amount: bank.amount,
+        bankName: bank.bankName,
+        bankAccountName: bank.bankAccountName,
+        bankAccountNumber: bank.bankAccountNumber,
+        status: bank.status,
+        createdAt: bank.createdAt,
+        type: sql<string>`'bank'`,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      })
+      .from(bank)
+      .leftJoin(user, eq(bank.userId, user.id))
+      .where(and(eq(bank.status, "PENDING"), eq(bank.instructionsSent, false)))
+      .orderBy(desc(bank.createdAt));
+
+    return {
+      cashapp: cashappDeposits,
+      paypal: paypalDeposits,
+      bank: bankDeposits,
+      summary: {
+        cashapp: cashappDeposits.length,
+        paypal: paypalDeposits.length,
+        bank: bankDeposits.length,
+        total:
+          cashappDeposits.length + paypalDeposits.length + bankDeposits.length,
+      },
+    };
   }
 }
