@@ -1,6 +1,5 @@
 import { relations } from "drizzle-orm";
 import { pgTable, varchar, text, timestamp, boolean, pgEnum, integer, doublePrecision, } from "drizzle-orm/pg-core";
-// Define enums first
 export const roleEnum = pgEnum("role", ["ADMIN", "USER"]);
 export const documentTypeEnum = pgEnum("document_type", [
     "ID_CARD",
@@ -263,6 +262,53 @@ export const cashapp = pgTable("cashapp", {
     amount: varchar("amount", { length: 255 }).notNull(),
     cashtag: text("cashtag").notNull(),
     cashappName: text("cashapp_name").notNull(),
+    adminCashtag: text("admin_cashtag"),
+    adminCashappName: text("admin_cashapp_name"),
+    instructionsSent: boolean("instructions_sent").notNull().default(false),
+    paymentProof: text("payment_proof"),
+    status: statusEnum("status").notNull().default("PENDING"),
+    rejectionReason: text("rejection_reason"),
+    approvedAt: timestamp("approved_at"),
+    rejectedAt: timestamp("rejected_at"),
+    createdAt: timestamp("created_at").notNull(),
+    updatedAt: timestamp("updated_at").notNull(),
+});
+export const paypal = pgTable("paypal", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    amount: varchar("amount", { length: 255 }).notNull(),
+    paypalEmail: text("paypal_email").notNull(),
+    paypalName: text("paypal_name").notNull(),
+    adminPaypalEmail: text("admin_paypal_email"),
+    adminPaypalName: text("admin_paypal_name"),
+    instructionsSent: boolean("instructions_sent").notNull().default(false),
+    paymentProof: text("payment_proof"),
+    status: statusEnum("status").notNull().default("PENDING"),
+    rejectionReason: text("rejection_reason"),
+    approvedAt: timestamp("approved_at"),
+    rejectedAt: timestamp("rejected_at"),
+    createdAt: timestamp("created_at").notNull(),
+    updatedAt: timestamp("updated_at").notNull(),
+});
+export const bank = pgTable("bank", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    amount: varchar("amount", { length: 255 }).notNull(),
+    bankName: text("bank_name").notNull(),
+    bankAccountNumber: text("bank_account_number").notNull(),
+    bankAccountName: text("bank_account_name").notNull(),
+    adminBankName: text("admin_bank_name"),
+    adminBankAccountNumber: text("admin_bank_account_number"),
+    adminBankAccountName: text("admin_bank_account_name"),
+    instructionsSent: boolean("instructions_sent").notNull().default(false),
     paymentProof: text("payment_proof"),
     status: statusEnum("status").notNull().default("PENDING"),
     rejectionReason: text("rejection_reason"),
@@ -298,6 +344,61 @@ export const withdrawal = pgTable("withdrawal", {
     amount: varchar("amount", { length: 255 }).notNull(),
     status: statusEnum("status").notNull().default("PENDING"),
     destinationAddress: text("destination_address").notNull(),
+    rejectionReason: text("rejection_reason"),
+    approvedAt: timestamp("approved_at"),
+    rejectedAt: timestamp("rejected_at"),
+    createdAt: timestamp("created_at").notNull(),
+    updatedAt: timestamp("updated_at").notNull(),
+});
+export const cashappWithdrawal = pgTable("cashapp_withdrawal", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    currency: currencyEnum("currency").notNull(),
+    amount: varchar("amount", { length: 255 }).notNull(),
+    status: statusEnum("status").notNull().default("PENDING"),
+    cashtag: text("cashtag").notNull(),
+    cashappName: text("cashapp_name").notNull(),
+    rejectionReason: text("rejection_reason"),
+    approvedAt: timestamp("approved_at"),
+    rejectedAt: timestamp("rejected_at"),
+    createdAt: timestamp("created_at").notNull(),
+    updatedAt: timestamp("updated_at").notNull(),
+});
+export const paypalWithdrawal = pgTable("paypal_withdrawal", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    currency: currencyEnum("currency").notNull(),
+    amount: varchar("amount", { length: 255 }).notNull(),
+    status: statusEnum("status").notNull().default("PENDING"),
+    paypalEmail: text("paypal_email").notNull(),
+    paypalName: text("paypal_name").notNull(),
+    rejectionReason: text("rejection_reason"),
+    approvedAt: timestamp("approved_at"),
+    rejectedAt: timestamp("rejected_at"),
+    createdAt: timestamp("created_at").notNull(),
+    updatedAt: timestamp("updated_at").notNull(),
+});
+export const bankWithdrawal = pgTable("bank_withdrawal", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    currency: currencyEnum("currency").notNull(),
+    amount: varchar("amount", { length: 255 }).notNull(),
+    status: statusEnum("status").notNull().default("PENDING"),
+    bankName: text("bank_name").notNull(),
+    bankAccountNumber: text("bank_account_number").notNull(),
+    bankAccountName: text("bank_account_name").notNull(),
     rejectionReason: text("rejection_reason"),
     approvedAt: timestamp("approved_at"),
     rejectedAt: timestamp("rejected_at"),

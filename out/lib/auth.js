@@ -1,3 +1,4 @@
+var _a;
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import db from "../db/index.js";
@@ -56,7 +57,7 @@ export const auth = betterAuth({
         },
     },
     trustedOrigins: process.env.NODE_ENV === "production"
-        ? [process.env.FRONTEND_URL]
+        ? [(_a = process.env.FRONTEND_URL) !== null && _a !== void 0 ? _a : ""]
         : [
             "http://localhost:5173",
             "http://localhost:3000",

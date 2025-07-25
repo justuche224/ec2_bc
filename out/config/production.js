@@ -15,6 +15,8 @@ export const productionConfig = {
         profileImages: process.env.STORAGE_PATH ? join(process.env.STORAGE_PATH, "profile-images") : join(process.cwd(), "storage", "profile-images"),
         productImages: process.env.STORAGE_PATH ? join(process.env.STORAGE_PATH, "product-images") : join(process.cwd(), "storage", "product-images"),
         depositProofs: process.env.STORAGE_PATH ? join(process.env.STORAGE_PATH, "deposit-proofs") : join(process.cwd(), "storage", "deposit-proofs"),
+        paypalProofs: process.env.STORAGE_PATH ? join(process.env.STORAGE_PATH, "paypal-proofs") : join(process.cwd(), "storage", "paypal-proofs"),
+        bankProofs: process.env.STORAGE_PATH ? join(process.env.STORAGE_PATH, "bank-proofs") : join(process.cwd(), "storage", "bank-proofs"),
     },
     upload: {
         maxFileSize: 5 * 1024 * 1024, // 5MB
