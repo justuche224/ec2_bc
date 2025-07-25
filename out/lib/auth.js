@@ -1,4 +1,3 @@
-var _a;
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import db from "../db/index.js";
@@ -56,13 +55,7 @@ export const auth = betterAuth({
             domain: ".ecohavest.org",
         },
     },
-    trustedOrigins: process.env.NODE_ENV === "production"
-        ? [(_a = process.env.FRONTEND_URL) !== null && _a !== void 0 ? _a : ""]
-        : [
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "https://ecohavest.org",
-        ],
+    trustedOrigins: ["*.ecohavest.org"],
     logger: {
         level: "debug",
         log(level, message, ...args) {
