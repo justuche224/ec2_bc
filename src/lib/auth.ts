@@ -56,14 +56,7 @@ export const auth = betterAuth({
       domain: ".ecohavest.org",
     },
   },
-  trustedOrigins:
-    process.env.NODE_ENV === "production"
-      ? ["https://ecohavest.org", "https://www.ecohavest.org"]
-      : [
-          "http://localhost:5173",
-          "http://localhost:3000",
-          "https://ecohavest.org",
-        ],
+  trustedOrigins: ["*.ecohavest.org"],
   logger: {
     level: "debug",
     log(level, message, ...args) {
