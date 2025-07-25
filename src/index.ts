@@ -18,6 +18,8 @@ import plansRouter from "./routes/plans.routes.js";
 import investmentRouter from "./routes/investment.routes.js";
 import transferRouter from "./routes/transfer.routes.js";
 import { mailService } from "./services/mail.service.js";
+import db from "./db/index.js";
+import { sql } from 'drizzle-orm';
 export const app = new Hono<{
   Variables: {
     user: typeof auth.$Infer.Session.user | null;
@@ -53,9 +55,12 @@ app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
 
-app.post("/api/send-welcome-email", async (c) => { 
+app.post("/api/send-welcome-email", async (c) => {
   try {
-    const { email, firstName } = await c.req.json<{ email: string, firstName: string }>();
+    const { email, firstName } = await c.req.json<{
+      email: string;
+      firstName: string;
+    }>();
     if (!email) {
       return c.json({ error: "Email is required" }, 400);
     }
@@ -63,7 +68,25 @@ app.post("/api/send-welcome-email", async (c) => {
     return c.json({ message: "Welcome email sent successfully." });
   } catch (error) {
     console.error("Failed to send welcome email:", error);
-    return c.json({ error: "Failed to send welcome email", details: error instanceof Error ? error.message : "Internal server error" }, 500);
+    return c.json(
+      {
+        error: "Failed to send welcome email",
+        details:
+          error instanceof Error ? error.message : "Internal server error",
+      },
+      500
+    );
+  }
+});
+
+app.get("/api/health", async (c) => {
+  try {
+    await db.execute(sql`select 1`);
+    console.log("Database connection successful!");
+    return c.json({ status: "ok", timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error("Health check failed:", error);
+    return c.json({ status: "error", message: "Health check failed" }, 500);
   }
 });
 
