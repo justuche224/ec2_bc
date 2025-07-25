@@ -58,7 +58,7 @@ export const auth = betterAuth({
   },
   trustedOrigins:
     process.env.NODE_ENV === "production"
-      ? [process.env.FRONTEND_URL,"https://ecohavest.org","https://www.ecohavest.org" ?? ""]
+      ? ["https://ecohavest.org", "https://www.ecohavest.org"]
       : [
           "http://localhost:5173",
           "http://localhost:3000",
