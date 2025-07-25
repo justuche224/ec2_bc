@@ -18,6 +18,8 @@ import plansRouter from "./routes/plans.routes.js";
 import investmentRouter from "./routes/investment.routes.js";
 import transferRouter from "./routes/transfer.routes.js";
 import { mailService } from "./services/mail.service.js";
+import db from "./db/index.js";
+import { sql } from 'drizzle-orm';
 export const app = new Hono();
 // Global middleware
 app.use("*", logger());
@@ -54,7 +56,21 @@ app.post("/api/send-welcome-email", async (c) => {
     }
     catch (error) {
         console.error("Failed to send welcome email:", error);
-        return c.json({ error: "Failed to send welcome email", details: error instanceof Error ? error.message : "Internal server error" }, 500);
+        return c.json({
+            error: "Failed to send welcome email",
+            details: error instanceof Error ? error.message : "Internal server error",
+        }, 500);
+    }
+});
+app.get("/api/health", async (c) => {
+    try {
+        await db.execute(sql `select 1`);
+        console.log("Database connection successful!");
+        return c.json({ status: "ok", timestamp: new Date().toISOString() });
+    }
+    catch (error) {
+        console.error("Health check failed:", error);
+        return c.json({ status: "error", message: "Health check failed" }, 500);
     }
 });
 // Start server
