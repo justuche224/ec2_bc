@@ -13,7 +13,13 @@ export class WalletController {
       }
 
       const formData = await c.req.formData();
-      const currency = formData.get("currency") as "BTC" | "ETH" | "USDT" | "SOL" | "BNB" | "LTC";
+      const currency = formData.get("currency") as
+        | "BTC"
+        | "ETH"
+        | "USDT"
+        | "SOL"
+        | "BNB"
+        | "LTC";
       const address = formData.get("address") as string;
       const qrCodeFile = formData.get("wallQRCode") as File;
 
@@ -39,7 +45,11 @@ export class WalletController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to upload system wallet",
+            error instanceof Error
+              ? error.message
+              : typeof error === "string"
+              ? error
+              : "Failed to upload system wallet",
         },
         500
       );
@@ -67,7 +77,13 @@ export class WalletController {
 
   static async getSystemWalletInfo(c: Context) {
     try {
-      const currency = c.req.query("currency") as "BTC" | "ETH" | "USDT" | "SOL" | "BNB" | "LTC";
+      const currency = c.req.query("currency") as
+        | "BTC"
+        | "ETH"
+        | "USDT"
+        | "SOL"
+        | "BNB"
+        | "LTC";
       if (!currency) {
         return c.json({ error: "Currency parameter is required" }, 400);
       }
@@ -83,7 +99,9 @@ export class WalletController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to get system wallet info",
+            error instanceof Error
+              ? error.message
+              : "Failed to get system wallet info",
         },
         500
       );
@@ -99,7 +117,9 @@ export class WalletController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to get system wallets",
+            error instanceof Error
+              ? error.message
+              : "Failed to get system wallets",
         },
         500
       );
@@ -115,7 +135,13 @@ export class WalletController {
 
       const walletId = c.req.param("id");
       const formData = await c.req.formData();
-      const currency = formData.get("currency") as "BTC" | "ETH" | "USDT" | "SOL" | "BNB" | "LTC";
+      const currency = formData.get("currency") as
+        | "BTC"
+        | "ETH"
+        | "USDT"
+        | "SOL"
+        | "BNB"
+        | "LTC";
       const address = formData.get("address") as string;
       const qrCodeFile = formData.get("wallQRCode") as File;
 
@@ -141,7 +167,9 @@ export class WalletController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to update system wallet",
+            error instanceof Error
+              ? error.message
+              : "Failed to update system wallet",
         },
         500
       );
@@ -163,7 +191,9 @@ export class WalletController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to delete system wallet",
+            error instanceof Error
+              ? error.message
+              : "Failed to delete system wallet",
         },
         500
       );
@@ -194,7 +224,9 @@ export class WalletController {
       if (!validCurrencies.includes(currency)) {
         return c.json(
           {
-            error: `Invalid currency. Must be one of: ${validCurrencies.join(", ")}`,
+            error: `Invalid currency. Must be one of: ${validCurrencies.join(
+              ", "
+            )}`,
           },
           400
         );
@@ -212,9 +244,13 @@ export class WalletController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to create user wallet",
+            error instanceof Error
+              ? error.message
+              : "Failed to create user wallet",
         },
-        error instanceof Error && error.message.includes("already have") ? 400 : 500
+        error instanceof Error && error.message.includes("already have")
+          ? 400
+          : 500
       );
     }
   }
@@ -226,12 +262,21 @@ export class WalletController {
         return c.json({ error: "Unauthorized: No user found" }, 401);
       }
 
-      const currency = c.req.query("currency") as "BTC" | "ETH" | "USDT" | "SOL" | "BNB" | "LTC" | undefined;
+      const currency = c.req.query("currency") as
+        | "BTC"
+        | "ETH"
+        | "USDT"
+        | "SOL"
+        | "BNB"
+        | "LTC"
+        | undefined;
       const walletInfo = await walletService.getUserWalletInfo(user.id);
 
       // If currency is specified, filter wallets by currency
       if (currency) {
-        const filteredWallets = walletInfo.filter(wallet => wallet.currency === currency);
+        const filteredWallets = walletInfo.filter(
+          (wallet) => wallet.currency === currency
+        );
         return c.json({ wallets: filteredWallets }, 200);
       }
 
@@ -241,7 +286,9 @@ export class WalletController {
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to get wallet info",
+            error instanceof Error
+              ? error.message
+              : "Failed to get wallet info",
         },
         500
       );
@@ -259,17 +306,23 @@ export class WalletController {
       const walletId = c.req.param("id");
       const isAdmin = user.role === "ADMIN";
       console.log("walletId", walletId);
-      const result = await walletService.deleteUserWallet(walletId, user.id, isAdmin);
+      const result = await walletService.deleteUserWallet(
+        walletId,
+        user.id,
+        isAdmin
+      );
       return c.json(result, 200);
     } catch (error) {
       console.error("Error deleting user wallet:", error);
       return c.json(
         {
           error:
-            error instanceof Error ? error.message : "Failed to delete user wallet",
+            error instanceof Error
+              ? error.message
+              : "Failed to delete user wallet",
         },
         500
       );
     }
   }
-} 
+}
