@@ -41,6 +41,8 @@ export class WalletController {
 
       return c.json({ success: true, wallet: result }, 201);
     } catch (error) {
+      console.log(typeof error);
+      console.log(error);
       console.error("Error uploading system wallet:", error);
       return c.json(
         {
