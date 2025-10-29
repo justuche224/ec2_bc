@@ -21,9 +21,15 @@ export class WalletController {
             return c.json({ success: true, wallet: result }, 201);
         }
         catch (error) {
+            console.log(typeof error);
+            console.log(error);
             console.error("Error uploading system wallet:", error);
             return c.json({
-                error: error instanceof Error ? error.message : "Failed to upload system wallet",
+                error: error instanceof Error
+                    ? error.message
+                    : typeof error === "string"
+                        ? error
+                        : "Failed to upload system wallet",
             }, 500);
         }
     }
@@ -58,7 +64,9 @@ export class WalletController {
         catch (error) {
             console.error("Error getting system wallet info:", error);
             return c.json({
-                error: error instanceof Error ? error.message : "Failed to get system wallet info",
+                error: error instanceof Error
+                    ? error.message
+                    : "Failed to get system wallet info",
             }, 500);
         }
     }
@@ -70,7 +78,9 @@ export class WalletController {
         catch (error) {
             console.error("Error getting all system wallets:", error);
             return c.json({
-                error: error instanceof Error ? error.message : "Failed to get system wallets",
+                error: error instanceof Error
+                    ? error.message
+                    : "Failed to get system wallets",
             }, 500);
         }
     }
@@ -96,7 +106,9 @@ export class WalletController {
         catch (error) {
             console.error("Error updating system wallet:", error);
             return c.json({
-                error: error instanceof Error ? error.message : "Failed to update system wallet",
+                error: error instanceof Error
+                    ? error.message
+                    : "Failed to update system wallet",
             }, 500);
         }
     }
@@ -113,7 +125,9 @@ export class WalletController {
         catch (error) {
             console.error("Error deleting system wallet:", error);
             return c.json({
-                error: error instanceof Error ? error.message : "Failed to delete system wallet",
+                error: error instanceof Error
+                    ? error.message
+                    : "Failed to delete system wallet",
             }, 500);
         }
     }
@@ -143,8 +157,12 @@ export class WalletController {
         catch (error) {
             console.error("Error creating user wallet:", error);
             return c.json({
-                error: error instanceof Error ? error.message : "Failed to create user wallet",
-            }, error instanceof Error && error.message.includes("already have") ? 400 : 500);
+                error: error instanceof Error
+                    ? error.message
+                    : "Failed to create user wallet",
+            }, error instanceof Error && error.message.includes("already have")
+                ? 400
+                : 500);
         }
     }
     static async getUserWalletInfo(c) {
@@ -157,7 +175,7 @@ export class WalletController {
             const walletInfo = await walletService.getUserWalletInfo(user.id);
             // If currency is specified, filter wallets by currency
             if (currency) {
-                const filteredWallets = walletInfo.filter(wallet => wallet.currency === currency);
+                const filteredWallets = walletInfo.filter((wallet) => wallet.currency === currency);
                 return c.json({ wallets: filteredWallets }, 200);
             }
             return c.json({ wallets: walletInfo }, 200);
@@ -165,7 +183,9 @@ export class WalletController {
         catch (error) {
             console.error("Error getting user wallet info:", error);
             return c.json({
-                error: error instanceof Error ? error.message : "Failed to get wallet info",
+                error: error instanceof Error
+                    ? error.message
+                    : "Failed to get wallet info",
             }, 500);
         }
     }
@@ -185,7 +205,9 @@ export class WalletController {
         catch (error) {
             console.error("Error deleting user wallet:", error);
             return c.json({
-                error: error instanceof Error ? error.message : "Failed to delete user wallet",
+                error: error instanceof Error
+                    ? error.message
+                    : "Failed to delete user wallet",
             }, 500);
         }
     }

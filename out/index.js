@@ -62,6 +62,24 @@ app.post("/api/send-welcome-email", async (c) => {
         }, 500);
     }
 });
+app.get("/test-mail-service", async (c) => {
+    try {
+        const email = "finovabright@gmail.com";
+        console.log(`
+      NODE_ENV: ${process.env.NODE_ENV}
+      MAILER_EMAIL: ${process.env.MAILER_EMAIL}
+      MAILER_PASSWORD: ${process.env.MAILER_PASSWORD}
+      MAILER_HOST: ${process.env.MAILER_HOST}
+      MAILER_PORT: ${process.env.MAILER_PORT}
+    `);
+        await mailService.sendMail({ to: email, subject: "Testing mail service", text: "Testing mail service", html: "Testing mail service" });
+        return c.json({ message: "Test email sent successfully" });
+    }
+    catch (error) {
+        console.error("Failed to send welcome email:", error);
+        return c.json({ message: "Failed to send test email", details: "Internal server error" });
+    }
+});
 app.get("/api/health", async (c) => {
     try {
         await db.execute(sql `select 1`);
