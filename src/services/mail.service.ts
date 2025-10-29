@@ -10,7 +10,7 @@ class MailService {
   constructor() {
     console.log("Initializing nodemailer transporter");
     console.log("NODE_ENV:", process.env.NODE_ENV)
-    console.log("HOST:", "smtp.privateemail.com")
+    console.log("HOST:", process.env.MAILER_HOST)
     console.log("MAIL:", process.env.MAILER_EMAIL)
     this.initializeTransporter();
   }
@@ -20,8 +20,8 @@ class MailService {
    */
   private initializeTransporter() {
     this.transporter = nodemailer.createTransport({
-      host: "smtp.privateemail.com",
-      port: 465,
+      host: process.env.MAILER_HOST,
+      port: Number(process.env.MAILER_PORT) || 465,
       secure: true,
       auth: {
         user: process.env.MAILER_EMAIL,
