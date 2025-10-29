@@ -16,7 +16,7 @@ class MailService {
    */
   private initializeTransporter() {
     this.transporter = nodemailer.createTransport({
-      host: "ecohavest.org",
+      host: "smtp.privateemail.com",
       port: 465,
       secure: true,
       auth: {
