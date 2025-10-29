@@ -8,6 +8,10 @@ class MailService {
   private transporter!: nodemailer.Transporter;
 
   constructor() {
+    console.log("Initializing nodemailer transporter");
+    console.log("NODE_ENV:", process.env.NODE_ENV)
+    console.log("HOST:", "smtp.privateemail.com")
+    console.log("MAIL:", process.env.MAILER_EMAIL)
     this.initializeTransporter();
   }
 
