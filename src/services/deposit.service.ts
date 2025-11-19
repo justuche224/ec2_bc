@@ -867,11 +867,11 @@ export class DepositService {
       throw new Error("Deposit not found");
     }
 
-    if (depositRecord.status !== "PROCESSING") {
-      throw new Error(
-        `Cannot mark as failed deposit with status: ${depositRecord.status}`
-      );
-    }
+    // if (depositRecord.status !== "PROCESSING") {
+    //   throw new Error(
+    //     `Cannot mark as failed deposit with status: ${depositRecord.status}`
+    //   );
+    // }
 
     const result = await db
       .update(cashapp)
