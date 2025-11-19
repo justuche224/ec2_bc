@@ -52,7 +52,7 @@ export const auth = betterAuth({
             secure: true,
             httpOnly: true,
             sameSite: "none",
-            domain: ".ecohavest.org",
+            // domain: ".ecohavest.org",
         },
     },
     trustedOrigins: [
@@ -60,6 +60,7 @@ export const auth = betterAuth({
         "https://ecohavest.org",
         "https://www.ecohavest.org",
         "https://*.ecohavest.org",
+        process.env.FRONTEND_URL || "",
     ],
     logger: {
         level: "debug",

@@ -539,9 +539,11 @@ export class DepositService {
         if (!depositRecord) {
             throw new Error("Deposit not found");
         }
-        if (depositRecord.status !== "PENDING") {
-            throw new Error(`Cannot reject deposit with status: ${depositRecord.status}`);
-        }
+        // if (depositRecord.status !== "PENDING") {
+        //   throw new Error(
+        //     `Cannot reject deposit with status: ${depositRecord.status}`
+        //   );
+        // }
         const result = await db
             .update(deposit)
             .set({
@@ -570,9 +572,11 @@ export class DepositService {
         if (!depositRecord) {
             throw new Error("Deposit not found");
         }
-        if (depositRecord.status !== "PROCESSING") {
-            throw new Error(`Cannot reject deposit with status: ${depositRecord.status}`);
-        }
+        // if (depositRecord.status !== "PROCESSING") {
+        //   throw new Error(
+        //     `Cannot reject deposit with status: ${depositRecord.status}`
+        //   );
+        // }
         const result = await db
             .update(cashapp)
             .set({
@@ -600,9 +604,11 @@ export class DepositService {
         if (!depositRecord) {
             throw new Error("Deposit not found");
         }
-        if (depositRecord.status !== "PROCESSING") {
-            throw new Error(`Cannot reject deposit with status: ${depositRecord.status}`);
-        }
+        // if (depositRecord.status !== "PROCESSING") {
+        //   throw new Error(
+        //     `Cannot reject deposit with status: ${depositRecord.status}`
+        //   );
+        // }
         const result = await db
             .update(paypal)
             .set({
@@ -630,9 +636,11 @@ export class DepositService {
         if (!depositRecord) {
             throw new Error("Deposit not found");
         }
-        if (depositRecord.status !== "PROCESSING") {
-            throw new Error(`Cannot reject deposit with status: ${depositRecord.status}`);
-        }
+        // if (depositRecord.status !== "PROCESSING") {
+        //   throw new Error(
+        //     `Cannot reject deposit with status: ${depositRecord.status}`
+        //   );
+        // }
         const result = await db
             .update(bank)
             .set({
@@ -660,9 +668,11 @@ export class DepositService {
         if (!depositRecord) {
             throw new Error("Deposit not found");
         }
-        if (depositRecord.status !== "PENDING") {
-            throw new Error(`Cannot mark as failed deposit with status: ${depositRecord.status}`);
-        }
+        // if (depositRecord.status !== "PENDING") {
+        //   throw new Error(
+        //     `Cannot mark as failed deposit with status: ${depositRecord.status}`
+        //   );
+        // }
         const result = await db
             .update(deposit)
             .set({
@@ -691,9 +701,11 @@ export class DepositService {
         if (!depositRecord) {
             throw new Error("Deposit not found");
         }
-        if (depositRecord.status !== "PROCESSING") {
-            throw new Error(`Cannot mark as failed deposit with status: ${depositRecord.status}`);
-        }
+        // if (depositRecord.status !== "PROCESSING") {
+        //   throw new Error(
+        //     `Cannot mark as failed deposit with status: ${depositRecord.status}`
+        //   );
+        // }
         const result = await db
             .update(cashapp)
             .set({
@@ -721,9 +733,11 @@ export class DepositService {
         if (!depositRecord) {
             throw new Error("Deposit not found");
         }
-        if (depositRecord.status !== "PROCESSING") {
-            throw new Error(`Cannot mark as failed deposit with status: ${depositRecord.status}`);
-        }
+        // if (depositRecord.status !== "PROCESSING") {
+        //   throw new Error(
+        //     `Cannot mark as failed deposit with status: ${depositRecord.status}`
+        //   );
+        // }
         const result = await db
             .update(paypal)
             .set({
@@ -751,9 +765,11 @@ export class DepositService {
         if (!depositRecord) {
             throw new Error("Deposit not found");
         }
-        if (depositRecord.status !== "PROCESSING") {
-            throw new Error(`Cannot mark as failed deposit with status: ${depositRecord.status}`);
-        }
+        // if (depositRecord.status !== "PROCESSING") {
+        //   throw new Error(
+        //     `Cannot mark as failed deposit with status: ${depositRecord.status}`
+        //   );
+        // }
         const result = await db
             .update(bank)
             .set({
