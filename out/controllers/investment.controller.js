@@ -15,6 +15,10 @@ const updateStatusSchema = z.object({
         invalid_type_error: "Invalid status value",
     }),
 });
+const updateProfitSchema = z.object({
+    currentProfit: z.number().min(0, "Current profit must be non-negative"),
+    nextProfit: z.number().min(0, "Next profit must be non-negative"),
+});
 const uuidSchema = z.string().uuid("Invalid ID format");
 export class InvestmentController {
     static async createInvestment(c) {
@@ -75,6 +79,38 @@ export class InvestmentController {
             const errorMessage = error instanceof Error
                 ? error.message
                 : "Failed to update investment status";
+            const statusCode = errorMessage.includes("not found") ? 404 : 500;
+            return c.json({ error: errorMessage }, statusCode);
+        }
+    }
+    static async updateInvestmentProfit(c) {
+        try {
+            const user = c.get("user");
+            if (!user || user.role !== "ADMIN") {
+                return c.json({ error: "Forbidden: Admin access required" }, 403);
+            }
+            const investmentId = c.req.param("id");
+            const idValidation = uuidSchema.safeParse(investmentId);
+            if (!idValidation.success) {
+                return c.json({ error: "Invalid Investment ID format" }, 400);
+            }
+            const body = await c.req.json();
+            const validationResult = updateProfitSchema.safeParse(body);
+            if (!validationResult.success) {
+                return c.json({
+                    error: "Invalid input",
+                    details: validationResult.error.flatten().fieldErrors,
+                }, 400);
+            }
+            const { currentProfit, nextProfit } = validationResult.data;
+            await investmentService.updateInvestmentProfit(idValidation.data, currentProfit, nextProfit, user.id);
+            return c.json({ message: "Investment profit updated successfully" }, 200);
+        }
+        catch (error) {
+            console.error("Error updating investment profit:", error);
+            const errorMessage = error instanceof Error
+                ? error.message
+                : "Failed to update investment profit";
             const statusCode = errorMessage.includes("not found") ? 404 : 500;
             return c.json({ error: errorMessage }, statusCode);
         }

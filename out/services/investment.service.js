@@ -67,13 +67,10 @@ export class InvestmentService {
         if (!investment) {
             throw new Error("Investment not found");
         }
-        const result = await db
+        await db
             .update(investments)
             .set({ status, updatedAt: new Date() })
             .where(eq(investments.id, investmentId));
-        if (result[0].affectedRows === 0) {
-            throw new Error("Investment not found or status unchanged");
-        }
         // Get plan details for the notification
         const plan = await plansService.getPlan(investment.planId);
         // Send email notification
@@ -119,8 +116,14 @@ export class InvestmentService {
             planId: investments.planId,
             currency: investments.currency,
             amount: investments.amount,
+            targetProfit: investments.targetProfit,
+            currentProfit: investments.currentProfit,
+            nextProfit: investments.nextProfit,
+            profitPercent: investments.profitPercent,
+            noOfROI: investments.noOfROI,
             status: investments.status,
             createdAt: investments.createdAt,
+            updatedAt: investments.updatedAt,
             userName: user.name,
             userEmail: user.email,
             planType: plans.type,
@@ -129,6 +132,24 @@ export class InvestmentService {
             .leftJoin(user, eq(investments.userId, user.id))
             .leftJoin(plans, eq(investments.planId, plans.id))
             .orderBy(desc(investments.createdAt));
+    }
+    async updateInvestmentProfit(investmentId, currentProfit, nextProfit, adminUserId) {
+        const investment = await this.getInvestmentById(investmentId);
+        if (!investment) {
+            throw new Error("Investment not found");
+        }
+        await db
+            .update(investments)
+            .set({
+            currentProfit,
+            nextProfit,
+            updatedAt: new Date(),
+        })
+            .where(eq(investments.id, investmentId));
+        if (adminUserId) {
+            console.log(`Admin (${adminUserId}) updated investment (${investmentId}) profit: currentProfit=${currentProfit}, nextProfit=${nextProfit}`);
+        }
+        return { success: true };
     }
     async deleteInvestments(investmentIds) {
         // Optional: Add logic here to revert balance changes or handle ROI if needed before deleting
