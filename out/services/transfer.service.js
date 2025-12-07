@@ -55,7 +55,7 @@ export class TransferService {
     async createInternalTransfer(userId, fromCurrency, toCurrency, amount) {
         // Check if user has sufficient balance
         const userBalance = await balanceService.getUserBalance(userId, fromCurrency);
-        if (!userBalance || BigInt(userBalance.amount) < BigInt(amount)) {
+        if (!userBalance || balanceService.safeAmountToBigInt(userBalance.amount) < balanceService.safeAmountToBigInt(amount)) {
             throw new Error("Insufficient balance");
         }
         // Create transfer record
@@ -74,7 +74,7 @@ export class TransferService {
     async createInterUserTransfer(senderId, recipientEmail, currency, amount) {
         // Check if user has sufficient balance
         const senderBalance = await balanceService.getUserBalance(senderId, currency);
-        if (!senderBalance || BigInt(senderBalance.amount) < BigInt(amount)) {
+        if (!senderBalance || balanceService.safeAmountToBigInt(senderBalance.amount) < balanceService.safeAmountToBigInt(amount)) {
             throw new Error("Insufficient balance");
         }
         // Find recipient by email

@@ -3,6 +3,48 @@ import db from "../db/index.js";
 import { balance } from "../db/schema.js";
 export class BalanceService {
     constructor() { }
+    /**
+     * Safely convert a decimal amount string to BigInt
+     * Multiplies by 10^8 to handle decimals (satoshi precision)
+     */
+    safeAmountToBigInt(amount) {
+        try {
+            // Check if amount contains a decimal point
+            if (amount.includes('.')) {
+                const [whole, decimal = ''] = amount.split('.');
+                // Pad or truncate to 8 decimal places (satoshi precision)
+                const paddedDecimal = (decimal + '00000000').slice(0, 8);
+                const amountStr = whole + paddedDecimal;
+                return BigInt(amountStr);
+            }
+            else {
+                // If no decimal, multiply by 10^8 to maintain consistency
+                return BigInt(amount) * BigInt(100000000);
+            }
+        }
+        catch (error) {
+            console.error(`Error converting amount to BigInt: ${amount}`, error);
+            return BigInt(0);
+        }
+    }
+    /**
+     * Convert BigInt back to decimal string
+     */
+    bigIntToAmount(value) {
+        const valueStr = value.toString();
+        if (valueStr === '0')
+            return '0';
+        // Ensure minimum length for decimal placement
+        const paddedValue = valueStr.padStart(9, '0');
+        const whole = paddedValue.slice(0, -8) || '0';
+        const decimal = paddedValue.slice(-8);
+        // Remove trailing zeros from decimal part
+        const trimmedDecimal = decimal.replace(/0+$/, '');
+        if (trimmedDecimal === '') {
+            return whole;
+        }
+        return `${whole}.${trimmedDecimal}`;
+    }
     static getInstance() {
         if (!BalanceService.instance) {
             BalanceService.instance = new BalanceService();
@@ -37,7 +79,9 @@ export class BalanceService {
             });
         }
         // Update existing balance
-        const newAmount = (BigInt(existingBalance.amount) + BigInt(amount)).toString();
+        const currentAmount = this.safeAmountToBigInt(existingBalance.amount);
+        const incrementAmount = this.safeAmountToBigInt(amount);
+        const newAmount = this.bigIntToAmount(currentAmount + incrementAmount);
         return await db
             .update(balance)
             .set({
@@ -52,11 +96,13 @@ export class BalanceService {
             throw new Error("No balance found for this currency");
         }
         // Check if user has sufficient balance
-        if (BigInt(existingBalance.amount) < BigInt(amount)) {
+        const currentAmount = this.safeAmountToBigInt(existingBalance.amount);
+        const decrementAmount = this.safeAmountToBigInt(amount);
+        if (currentAmount < decrementAmount) {
             throw new Error("Insufficient balance");
         }
         // Update existing balance
-        const newAmount = (BigInt(existingBalance.amount) - BigInt(amount)).toString();
+        const newAmount = this.bigIntToAmount(currentAmount - decrementAmount);
         return await db
             .update(balance)
             .set({
@@ -84,7 +130,10 @@ export class BalanceService {
             .from(balance);
         // Sum up balances for each currency
         for (const record of balances) {
-            totalBalances[record.currency] = (BigInt(totalBalances[record.currency]) + BigInt(record.amount)).toString();
+            const currentTotal = this.safeAmountToBigInt(totalBalances[record.currency]);
+            const recordAmount = this.safeAmountToBigInt(record.amount);
+            const newTotal = currentTotal + recordAmount;
+            totalBalances[record.currency] = this.bigIntToAmount(newTotal);
         }
         return totalBalances;
     }
@@ -109,20 +158,23 @@ export class BalanceService {
         console.log("balances in service", balances);
         // Sum up balances for each currency
         for (const record of balances) {
-            totalBalances[record.currency] = (BigInt(totalBalances[record.currency]) + BigInt(record.amount)).toString();
+            const currentTotal = this.safeAmountToBigInt(totalBalances[record.currency]);
+            const recordAmount = this.safeAmountToBigInt(record.amount);
+            const newTotal = currentTotal + recordAmount;
+            totalBalances[record.currency] = this.bigIntToAmount(newTotal);
         }
         console.log("totalBalances in service", totalBalances);
         return totalBalances;
     }
     async adminAdjustBalance(userId, currency, amount, adminUserId) {
-        // Input validation: Ensure amount is a valid integer string
+        // Input validation: Ensure amount is valid
         let adjustmentAmount;
         try {
-            adjustmentAmount = BigInt(amount);
+            adjustmentAmount = this.safeAmountToBigInt(amount);
             console.log(adjustmentAmount);
         }
         catch (error) {
-            throw new Error("Invalid amount format. Amount must be an integer string.");
+            throw new Error("Invalid amount format.");
         }
         const existingBalance = await this.getUserBalance(userId, currency);
         console.log(existingBalance);
@@ -130,15 +182,16 @@ export class BalanceService {
         if (!existingBalance) {
             // If balance doesn't exist and adjustment is positive, create it.
             if (adjustmentAmount > 0n) {
+                const amountToStore = this.bigIntToAmount(adjustmentAmount);
                 await db.insert(balance).values({
                     userId,
                     currency,
-                    amount: adjustmentAmount.toString(),
+                    amount: amountToStore,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 });
-                console.log(`Admin (${adminUserId}) created balance for user (${userId}) with ${amount} ${currency}`);
-                return { success: true, newBalance: adjustmentAmount.toString() };
+                console.log(`Admin (${adminUserId}) created balance for user (${userId}) with ${amountToStore} ${currency}`);
+                return { success: true, newBalance: amountToStore };
             }
             else {
                 // Cannot decrease a non-existent balance
@@ -147,14 +200,14 @@ export class BalanceService {
         }
         else {
             // Calculate new balance
-            const currentBalance = BigInt(existingBalance.amount);
+            const currentBalance = this.safeAmountToBigInt(existingBalance.amount);
             const calculatedNewAmount = currentBalance + adjustmentAmount;
             console.log("calculatedNewAmount", calculatedNewAmount);
             // Ensure balance does not go below zero
             if (calculatedNewAmount < 0n) {
                 throw new Error("Insufficient balance: Adjustment would result in a negative balance.");
             }
-            newAmount = calculatedNewAmount.toString();
+            newAmount = this.bigIntToAmount(calculatedNewAmount);
             console.log("newAmount", newAmount);
         }
         // Update existing balance

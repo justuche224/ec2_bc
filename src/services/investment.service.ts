@@ -32,7 +32,7 @@ export class InvestmentService {
     const userBalance = await balanceService.getUserBalance(userId, currency);
     const planPriceString = plan.price.toString(); // Convert plan price to string for BigInt comparison
 
-    if (!userBalance || BigInt(userBalance.amount) < BigInt(planPriceString)) {
+    if (!userBalance || balanceService.safeAmountToBigInt(userBalance.amount) < balanceService.safeAmountToBigInt(planPriceString)) {
       throw new Error(`Insufficient ${currency} balance`);
     }
 
@@ -229,10 +229,10 @@ export class InvestmentService {
     for (const investment of userInvestments) {
       const currency = investment.currency;
       if (currency && totalInvestedAmountByCurrency.hasOwnProperty(currency)) {
-        totalInvestedAmountByCurrency[currency] = (
-          BigInt(totalInvestedAmountByCurrency[currency]) +
-          BigInt(investment.amount)
-        ).toString();
+        totalInvestedAmountByCurrency[currency] = balanceService.bigIntToAmount(
+          balanceService.safeAmountToBigInt(totalInvestedAmountByCurrency[currency]) +
+          balanceService.safeAmountToBigInt(investment.amount.toString())
+        );
       }
     }
 

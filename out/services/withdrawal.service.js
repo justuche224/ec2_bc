@@ -173,8 +173,8 @@ export class WithdrawalService {
         // Check if user has sufficient balance in any currency
         const userBalance = await balanceService.getUserBalance(userId, currency);
         console.log(userBalance);
-        const balanceAmount = userBalance ? BigInt(userBalance.amount) : BigInt(0);
-        if (balanceAmount < BigInt(amount)) {
+        const balanceAmount = userBalance ? balanceService.safeAmountToBigInt(userBalance.amount) : BigInt(0);
+        if (balanceAmount < balanceService.safeAmountToBigInt(amount)) {
             throw new Error("Insufficient balance");
         }
         // Create withdrawal record
@@ -205,8 +205,8 @@ export class WithdrawalService {
     }
     async createCashappWithdrawal(userId, currency, amount, cashtag, cashappName) {
         const userBalance = await balanceService.getUserBalance(userId, currency);
-        const balanceAmount = userBalance ? BigInt(userBalance.amount) : BigInt(0);
-        if (balanceAmount < BigInt(amount)) {
+        const balanceAmount = userBalance ? balanceService.safeAmountToBigInt(userBalance.amount) : BigInt(0);
+        if (balanceAmount < balanceService.safeAmountToBigInt(amount)) {
             throw new Error("Insufficient balance");
         }
         const result = await db.insert(cashappWithdrawal).values({
@@ -237,8 +237,8 @@ export class WithdrawalService {
     }
     async createPaypalWithdrawal(userId, currency, amount, paypalEmail, paypalName) {
         const userBalance = await balanceService.getUserBalance(userId, currency);
-        const balanceAmount = userBalance ? BigInt(userBalance.amount) : BigInt(0);
-        if (balanceAmount < BigInt(amount)) {
+        const balanceAmount = userBalance ? balanceService.safeAmountToBigInt(userBalance.amount) : BigInt(0);
+        if (balanceAmount < balanceService.safeAmountToBigInt(amount)) {
             throw new Error("Insufficient balance");
         }
         const result = await db.insert(paypalWithdrawal).values({
@@ -269,8 +269,8 @@ export class WithdrawalService {
     }
     async createBankWithdrawal(userId, currency, amount, bankName, bankAccountNumber, bankAccountName) {
         const userBalance = await balanceService.getUserBalance(userId, currency);
-        const balanceAmount = userBalance ? BigInt(userBalance.amount) : BigInt(0);
-        if (balanceAmount < BigInt(amount)) {
+        const balanceAmount = userBalance ? balanceService.safeAmountToBigInt(userBalance.amount) : BigInt(0);
+        if (balanceAmount < balanceService.safeAmountToBigInt(amount)) {
             throw new Error("Insufficient balance");
         }
         const result = await db.insert(bankWithdrawal).values({

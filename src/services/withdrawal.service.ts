@@ -200,9 +200,9 @@ export class WithdrawalService {
     // Check if user has sufficient balance in any currency
     const userBalance = await balanceService.getUserBalance(userId, currency);
     console.log(userBalance);
-    const balanceAmount = userBalance ? BigInt(userBalance.amount) : BigInt(0);
+    const balanceAmount = userBalance ? balanceService.safeAmountToBigInt(userBalance.amount) : BigInt(0);
 
-    if (balanceAmount < BigInt(amount)) {
+    if (balanceAmount < balanceService.safeAmountToBigInt(amount)) {
       throw new Error("Insufficient balance");
     }
 
@@ -243,9 +243,9 @@ export class WithdrawalService {
     cashappName: string
   ) {
     const userBalance = await balanceService.getUserBalance(userId, currency);
-    const balanceAmount = userBalance ? BigInt(userBalance.amount) : BigInt(0);
+    const balanceAmount = userBalance ? balanceService.safeAmountToBigInt(userBalance.amount) : BigInt(0);
 
-    if (balanceAmount < BigInt(amount)) {
+    if (balanceAmount < balanceService.safeAmountToBigInt(amount)) {
       throw new Error("Insufficient balance");
     }
 
@@ -286,9 +286,9 @@ export class WithdrawalService {
     paypalName: string
   ) {
     const userBalance = await balanceService.getUserBalance(userId, currency);
-    const balanceAmount = userBalance ? BigInt(userBalance.amount) : BigInt(0);
+    const balanceAmount = userBalance ? balanceService.safeAmountToBigInt(userBalance.amount) : BigInt(0);
 
-    if (balanceAmount < BigInt(amount)) {
+    if (balanceAmount < balanceService.safeAmountToBigInt(amount)) {
       throw new Error("Insufficient balance");
     }
 
@@ -330,9 +330,9 @@ export class WithdrawalService {
     bankAccountName: string
   ) {
     const userBalance = await balanceService.getUserBalance(userId, currency);
-    const balanceAmount = userBalance ? BigInt(userBalance.amount) : BigInt(0);
+    const balanceAmount = userBalance ? balanceService.safeAmountToBigInt(userBalance.amount) : BigInt(0);
 
-    if (balanceAmount < BigInt(amount)) {
+    if (balanceAmount < balanceService.safeAmountToBigInt(amount)) {
       throw new Error("Insufficient balance");
     }
 

@@ -75,7 +75,7 @@ export class TransferService {
   ) {
     // Check if user has sufficient balance
     const userBalance = await balanceService.getUserBalance(userId, fromCurrency);
-    if (!userBalance || BigInt(userBalance.amount) < BigInt(amount)) {
+    if (!userBalance || balanceService.safeAmountToBigInt(userBalance.amount) < balanceService.safeAmountToBigInt(amount)) {
       throw new Error("Insufficient balance");
     }
 
@@ -101,7 +101,7 @@ export class TransferService {
   ) {
     // Check if user has sufficient balance
     const senderBalance = await balanceService.getUserBalance(senderId, currency);
-    if (!senderBalance || BigInt(senderBalance.amount) < BigInt(amount)) {
+    if (!senderBalance || balanceService.safeAmountToBigInt(senderBalance.amount) < balanceService.safeAmountToBigInt(amount)) {
       throw new Error("Insufficient balance");
     }
 
