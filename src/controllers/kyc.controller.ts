@@ -47,12 +47,17 @@ export class KYCController {
       return c.json({ success: true, kyc: result }, 201);
     } catch (error) {
       console.error("Error uploading KYC images:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to upload images";
+
+      const isValidationError =
+        errorMessage.includes("must be under") ||
+        errorMessage.includes("must be images") ||
+        errorMessage.includes("already have a pending");
+
       return c.json(
-        {
-          error:
-            error instanceof Error ? error.message : "Failed to upload images",
-        },
-        500
+        { error: errorMessage },
+        isValidationError ? 400 : 500
       );
     }
   }
