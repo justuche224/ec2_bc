@@ -1,7 +1,10 @@
 import { ReferralService } from "../services/referral.service.js";
+import { CrowdfundingService } from "../services/crowdfunding.service.js";
 const referralService = ReferralService.getInstance();
+const crowdfundingService = CrowdfundingService.getInstance();
 export class ReferralController {
     // Public endpoint for signup referrals - no auth required
+    // Creates both regular referral AND crowdfunding referral
     static async createReferralFromSignup(c) {
         try {
             const { referrerId, referreeId } = await c.req.json();
@@ -12,8 +15,19 @@ export class ReferralController {
             if (referrerId === referreeId) {
                 return c.json({ error: "Cannot refer yourself" }, 400);
             }
-            const result = await referralService.createReferral(referrerId, referreeId);
-            return c.json(result, 201);
+            // Create regular referral
+            const regularResult = await referralService.createReferral(referrerId, referreeId);
+            // Also create pending crowdfunding referral (this won't fail if referrer hasn't invested)
+            let crowdfundingResult = null;
+            try {
+                crowdfundingResult =
+                    await crowdfundingService.createPendingReferralFromSignup(referrerId, referreeId);
+            }
+            catch (cfError) {
+                console.error("Failed to create crowdfunding referral:", cfError);
+                // Don't fail the whole request if crowdfunding referral fails
+            }
+            return c.json(Object.assign(Object.assign({}, regularResult), { crowdfundingReferral: crowdfundingResult }), 201);
         }
         catch (error) {
             console.error("Error creating referral from signup:", error);

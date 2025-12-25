@@ -331,6 +331,42 @@ export class CrowdfundingService {
     return { success: true, referral: newReferral[0] };
   }
 
+  // For signup flow - creates pending referral without requiring referrer to have invested
+  async createPendingReferralFromSignup(
+    referrerId: string,
+    referreeId: string
+  ) {
+    // Check if referral already exists
+    const existingReferral = await db
+      .select()
+      .from(crowdfundingReferrals)
+      .where(
+        and(
+          eq(crowdfundingReferrals.referrerId, referrerId),
+          eq(crowdfundingReferrals.referreeId, referreeId)
+        )
+      )
+      .limit(1);
+
+    if (existingReferral.length > 0) {
+      // Don't throw error, just return existing referral
+      return { success: true, referral: existingReferral[0], existed: true };
+    }
+
+    const newReferral = await db
+      .insert(crowdfundingReferrals)
+      .values({
+        id: uuidv4(),
+        referrerId,
+        referreeId,
+        status: "PENDING",
+        createdAt: new Date(),
+      })
+      .returning();
+
+    return { success: true, referral: newReferral[0], existed: false };
+  }
+
   async markReferralComplete(referralId: string) {
     const referral = await db
       .select()
