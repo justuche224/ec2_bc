@@ -4,12 +4,15 @@ import { ReferralController } from "../controllers/referral.controller.js";
 
 const referralRouter = new Hono();
 
-// Apply authentication middleware to all referral routes
-referralRouter.use("*", requireAuth);
+// Public route for signup referrals - no auth required
+referralRouter.post("/signup", ReferralController.createReferralFromSignup);
 
-// Referral routes
+// Apply authentication middleware to remaining referral routes
+referralRouter.use("/*", requireAuth);
+
+// Authenticated referral routes
 referralRouter.post("/", ReferralController.createReferral);
 referralRouter.get("/", ReferralController.getUserReferrals);
 referralRouter.get("/stats", ReferralController.getReferralStats);
 
-export default referralRouter; 
+export default referralRouter;
