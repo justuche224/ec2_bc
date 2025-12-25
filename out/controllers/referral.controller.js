@@ -1,6 +1,30 @@
 import { ReferralService } from "../services/referral.service.js";
 const referralService = ReferralService.getInstance();
 export class ReferralController {
+    // Public endpoint for signup referrals - no auth required
+    static async createReferralFromSignup(c) {
+        try {
+            const { referrerId, referreeId } = await c.req.json();
+            if (!referrerId || !referreeId) {
+                return c.json({ error: "Missing required fields: referrerId and referreeId" }, 400);
+            }
+            // Prevent self-referral
+            if (referrerId === referreeId) {
+                return c.json({ error: "Cannot refer yourself" }, 400);
+            }
+            const result = await referralService.createReferral(referrerId, referreeId);
+            return c.json(result, 201);
+        }
+        catch (error) {
+            console.error("Error creating referral from signup:", error);
+            return c.json({
+                error: error instanceof Error
+                    ? error.message
+                    : "Failed to create referral",
+            }, 500);
+        }
+    }
+    // Authenticated endpoint - uses session user as referree
     static async createReferral(c) {
         try {
             const user = c.get("user");
@@ -9,7 +33,7 @@ export class ReferralController {
             }
             const { referrerId } = await c.req.json();
             if (!referrerId) {
-                return c.json({ error: "Missing required field: referreeId" }, 400);
+                return c.json({ error: "Missing required field: referrerId" }, 400);
             }
             // Prevent self-referral
             if (user.id === referrerId) {
@@ -21,7 +45,9 @@ export class ReferralController {
         catch (error) {
             console.error("Error creating referral:", error);
             return c.json({
-                error: error instanceof Error ? error.message : "Failed to create referral",
+                error: error instanceof Error
+                    ? error.message
+                    : "Failed to create referral",
             }, 500);
         }
     }
@@ -53,7 +79,9 @@ export class ReferralController {
         catch (error) {
             console.error("Error getting referral stats:", error);
             return c.json({
-                error: error instanceof Error ? error.message : "Failed to get referral stats",
+                error: error instanceof Error
+                    ? error.message
+                    : "Failed to get referral stats",
             }, 500);
         }
     }

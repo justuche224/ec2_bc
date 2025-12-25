@@ -62,6 +62,12 @@ export const auth = betterAuth({
         "https://*.ecohavest.org",
         process.env.FRONTEND_URL || "",
     ],
+    session: {
+        cookieCache: {
+            enabled: true,
+            maxAge: 5 * 60, // Cache duration in seconds (5 minutes)
+        },
+    },
     logger: {
         level: "debug",
         log(level, message, ...args) {
