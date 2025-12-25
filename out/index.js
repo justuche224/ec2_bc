@@ -17,9 +17,10 @@ import referralRouter from "./routes/referral.routes.js";
 import plansRouter from "./routes/plans.routes.js";
 import investmentRouter from "./routes/investment.routes.js";
 import transferRouter from "./routes/transfer.routes.js";
+import crowdfundingRouter from "./routes/crowdfunding.routes.js";
 import { mailService } from "./services/mail.service.js";
 import db from "./db/index.js";
-import { sql } from 'drizzle-orm';
+import { sql } from "drizzle-orm";
 export const app = new Hono();
 // Global middleware
 app.use("*", logger());
@@ -37,6 +38,7 @@ app.route("/api/referrals", referralRouter);
 app.route("/api/plans", plansRouter);
 app.route("/api/investments", investmentRouter);
 app.route("/api/transfers", transferRouter);
+app.route("/api/crowdfunding", crowdfundingRouter);
 // Auth routes
 app.on(["POST", "GET"], "/api/auth/*", (c) => {
     return auth.handler(c.req.raw);

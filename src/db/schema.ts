@@ -72,6 +72,19 @@ export const referrals = pgTable("referrals", {
   createdAt: timestamp("created_at").notNull(),
 });
 
+export const referralsRelations = relations(referrals, ({ one }) => ({
+  referrer: one(user, {
+    fields: [referrals.referrerId],
+    references: [user.id],
+    relationName: "referrer",
+  }),
+  referree: one(user, {
+    fields: [referrals.referreeId],
+    references: [user.id],
+    relationName: "referree",
+  }),
+}));
+
 export const session = pgTable("session", {
   id: text("id").primaryKey(),
   expiresAt: timestamp("expires_at").notNull(),
@@ -496,7 +509,8 @@ export const userRelations = relations(user, ({ one, many }) => ({
   balances: many(balance),
   deposits: many(deposit),
   withdrawals: many(withdrawal),
-  referrals: many(referrals),
+  referralsMade: many(referrals, { relationName: "referrer" }),
+  referralsReceived: many(referrals, { relationName: "referree" }),
   investments: many(investments),
 }));
 
@@ -537,3 +551,144 @@ export const productRelations = relations(product, ({ one }) => ({
     references: [productCategory.id],
   }),
 }));
+
+// ==================== CROWDFUNDING SYSTEM ====================
+
+// Crowdfunding pool status enum
+export const crowdfundingPoolStatusEnum = pgEnum("crowdfunding_pool_status", [
+  "PENDING",
+  "ACTIVE",
+  "COMPLETED",
+  "CANCELLED",
+]);
+
+// Crowdfunding referral status enum
+export const crowdfundingReferralStatusEnum = pgEnum(
+  "crowdfunding_referral_status",
+  ["PENDING", "COMPLETED"]
+);
+
+// Crowdfunding system settings (admin-configurable)
+export const crowdfundingSettings = pgTable("crowdfunding_settings", {
+  id: varchar("id", { length: 36 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  minInvestmentAmount: doublePrecision("min_investment_amount")
+    .notNull()
+    .default(100),
+  requiredReferrals: integer("required_referrals").notNull().default(10),
+  systemTargetParticipants: integer("system_target_participants")
+    .notNull()
+    .default(1000),
+  poolTargetParticipants: integer("pool_target_participants")
+    .notNull()
+    .default(100),
+  referralBonusPercent: doublePrecision("referral_bonus_percent")
+    .notNull()
+    .default(5),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+// Crowdfunding pools
+export const crowdfundingPools = pgTable("crowdfunding_pools", {
+  id: varchar("id", { length: 36 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  targetParticipants: integer("target_participants").notNull().default(100),
+  currentParticipants: integer("current_participants").notNull().default(0),
+  totalInvested: doublePrecision("total_invested").notNull().default(0),
+  minInvestmentAmount: doublePrecision("min_investment_amount").notNull(),
+  status: crowdfundingPoolStatusEnum("status").notNull().default("PENDING"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+// User investments in crowdfunding pools
+export const crowdfundingInvestments = pgTable("crowdfunding_investments", {
+  id: varchar("id", { length: 36 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id", { length: 36 })
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  poolId: varchar("pool_id", { length: 36 })
+    .notNull()
+    .references(() => crowdfundingPools.id, { onDelete: "cascade" }),
+  currency: currencyEnum("currency").notNull(),
+  amount: doublePrecision("amount").notNull(),
+  currentProfit: doublePrecision("current_profit").notNull().default(0),
+  status: statusEnum("status").notNull().default("ACTIVE"),
+  completedReferrals: integer("completed_referrals").notNull().default(0),
+  requiredReferrals: integer("required_referrals").notNull().default(10),
+  isEligibleForAirdrop: boolean("is_eligible_for_airdrop")
+    .notNull()
+    .default(false),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+// Track referrals specifically for crowdfunding
+export const crowdfundingReferrals = pgTable("crowdfunding_referrals", {
+  id: varchar("id", { length: 36 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  referrerId: varchar("referrer_id", { length: 36 })
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  referreeId: varchar("referree_id", { length: 36 })
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  investmentId: varchar("investment_id", { length: 36 }).references(
+    () => crowdfundingInvestments.id,
+    { onDelete: "set null" }
+  ),
+  status: crowdfundingReferralStatusEnum("status").notNull().default("PENDING"),
+  createdAt: timestamp("created_at").notNull(),
+  completedAt: timestamp("completed_at"),
+});
+
+// Crowdfunding relations
+export const crowdfundingPoolsRelations = relations(
+  crowdfundingPools,
+  ({ many }) => ({
+    investments: many(crowdfundingInvestments),
+  })
+);
+
+export const crowdfundingInvestmentsRelations = relations(
+  crowdfundingInvestments,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [crowdfundingInvestments.userId],
+      references: [user.id],
+    }),
+    pool: one(crowdfundingPools, {
+      fields: [crowdfundingInvestments.poolId],
+      references: [crowdfundingPools.id],
+    }),
+  })
+);
+
+export const crowdfundingReferralsRelations = relations(
+  crowdfundingReferrals,
+  ({ one }) => ({
+    referrer: one(user, {
+      fields: [crowdfundingReferrals.referrerId],
+      references: [user.id],
+      relationName: "crowdfundingReferrer",
+    }),
+    referree: one(user, {
+      fields: [crowdfundingReferrals.referreeId],
+      references: [user.id],
+      relationName: "crowdfundingReferree",
+    }),
+    investment: one(crowdfundingInvestments, {
+      fields: [crowdfundingReferrals.investmentId],
+      references: [crowdfundingInvestments.id],
+    }),
+  })
+);

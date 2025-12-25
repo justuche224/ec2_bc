@@ -8,6 +8,7 @@
     "postinstall": "pnpm i --save-dev @types/node @types/jest @types/supertest @types/nodemailer",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "test": "NODE_ENV=test jest",
     "test:watch": "NODE_ENV=test jest --watch",
