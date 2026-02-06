@@ -542,7 +542,7 @@ export const productCategoryRelations = relations(
   productCategory,
   ({ many }) => ({
     products: many(product),
-  })
+  }),
 );
 
 export const productRelations = relations(product, ({ one }) => ({
@@ -565,7 +565,7 @@ export const crowdfundingPoolStatusEnum = pgEnum("crowdfunding_pool_status", [
 // Crowdfunding referral status enum
 export const crowdfundingReferralStatusEnum = pgEnum(
   "crowdfunding_referral_status",
-  ["PENDING", "COMPLETED"]
+  ["PENDING", "COMPLETED"],
 );
 
 // Crowdfunding system settings (admin-configurable)
@@ -598,6 +598,7 @@ export const crowdfundingPools = pgTable("crowdfunding_pools", {
     .$defaultFn(() => crypto.randomUUID()),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
+  beneficiaryFor: text("beneficiary_for"), // Optional field for name/reason/owner of crowdfunding
   targetParticipants: integer("target_participants").notNull().default(100),
   currentParticipants: integer("current_participants").notNull().default(0),
   totalInvested: doublePrecision("total_invested").notNull().default(0),
@@ -644,7 +645,7 @@ export const crowdfundingReferrals = pgTable("crowdfunding_referrals", {
     .references(() => user.id, { onDelete: "cascade" }),
   investmentId: varchar("investment_id", { length: 36 }).references(
     () => crowdfundingInvestments.id,
-    { onDelete: "set null" }
+    { onDelete: "set null" },
   ),
   status: crowdfundingReferralStatusEnum("status").notNull().default("PENDING"),
   createdAt: timestamp("created_at").notNull(),
@@ -656,7 +657,7 @@ export const crowdfundingPoolsRelations = relations(
   crowdfundingPools,
   ({ many }) => ({
     investments: many(crowdfundingInvestments),
-  })
+  }),
 );
 
 export const crowdfundingInvestmentsRelations = relations(
@@ -670,7 +671,7 @@ export const crowdfundingInvestmentsRelations = relations(
       fields: [crowdfundingInvestments.poolId],
       references: [crowdfundingPools.id],
     }),
-  })
+  }),
 );
 
 export const crowdfundingReferralsRelations = relations(
@@ -690,5 +691,5 @@ export const crowdfundingReferralsRelations = relations(
       fields: [crowdfundingReferrals.investmentId],
       references: [crowdfundingInvestments.id],
     }),
-  })
+  }),
 );

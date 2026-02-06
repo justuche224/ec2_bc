@@ -1,0 +1,1 @@
+ALTER TABLE "crowdfunding_pools" ADD COLUMN "beneficiary_for" text;

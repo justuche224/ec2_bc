@@ -539,6 +539,7 @@ export const crowdfundingPools = pgTable("crowdfunding_pools", {
         .$defaultFn(() => crypto.randomUUID()),
     name: varchar("name", { length: 255 }).notNull(),
     description: text("description"),
+    beneficiaryFor: text("beneficiary_for"), // Optional field for name/reason/owner of crowdfunding
     targetParticipants: integer("target_participants").notNull().default(100),
     currentParticipants: integer("current_participants").notNull().default(0),
     totalInvested: doublePrecision("total_invested").notNull().default(0),

@@ -13,6 +13,7 @@ const updateSettingsSchema = z.object({
 const createPoolSchema = z.object({
     name: z.string().min(1, "Pool name is required"),
     description: z.string().optional(),
+    beneficiaryFor: z.string().optional(),
     targetParticipants: z.number().min(1).optional(),
     minInvestmentAmount: z
         .number()
@@ -21,6 +22,7 @@ const createPoolSchema = z.object({
 const updatePoolSchema = z.object({
     name: z.string().min(1).optional(),
     description: z.string().optional(),
+    beneficiaryFor: z.string().optional(),
     targetParticipants: z.number().min(1).optional(),
     currentParticipants: z.number().min(0).optional(),
     totalInvested: z.number().min(0).optional(),

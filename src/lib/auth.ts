@@ -58,6 +58,7 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     "*.ecohavest.org",
+    "http://localhost:3000",
     "https://ecohavest.org",
     "https://www.ecohavest.org",
     "https://*.ecohavest.org",

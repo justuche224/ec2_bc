@@ -83,6 +83,7 @@ export class CrowdfundingService {
   async createPool(data: {
     name: string;
     description?: string;
+    beneficiaryFor?: string;
     targetParticipants: number;
     minInvestmentAmount: number;
   }) {
@@ -103,12 +104,13 @@ export class CrowdfundingService {
     data: {
       name?: string;
       description?: string;
+      beneficiaryFor?: string;
       targetParticipants?: number;
       currentParticipants?: number;
       totalInvested?: number;
       minInvestmentAmount?: number;
       status?: "PENDING" | "ACTIVE" | "COMPLETED" | "CANCELLED";
-    }
+    },
   ) {
     const pool = await this.getPool(poolId);
     if (!pool) {
@@ -135,7 +137,7 @@ export class CrowdfundingService {
     userId: string,
     poolId: string,
     currency: Currency,
-    amount: number
+    amount: number,
   ) {
     const pool = await this.getPool(poolId);
     if (!pool) {
@@ -217,7 +219,7 @@ export class CrowdfundingService {
       .from(crowdfundingInvestments)
       .leftJoin(
         crowdfundingPools,
-        eq(crowdfundingInvestments.poolId, crowdfundingPools.id)
+        eq(crowdfundingInvestments.poolId, crowdfundingPools.id),
       )
       .where(eq(crowdfundingInvestments.userId, userId))
       .orderBy(desc(crowdfundingInvestments.createdAt));
@@ -236,7 +238,7 @@ export class CrowdfundingService {
       .leftJoin(user, eq(crowdfundingInvestments.userId, user.id))
       .leftJoin(
         crowdfundingPools,
-        eq(crowdfundingInvestments.poolId, crowdfundingPools.id)
+        eq(crowdfundingInvestments.poolId, crowdfundingPools.id),
       )
       .orderBy(desc(crowdfundingInvestments.createdAt));
   }
@@ -257,7 +259,7 @@ export class CrowdfundingService {
       status?: "PENDING" | "ACTIVE" | "COMPLETED" | "CANCELLED";
       completedReferrals?: number;
       isEligibleForAirdrop?: boolean;
-    }
+    },
   ) {
     const investment = await this.getInvestmentById(investmentId);
     if (!investment) {
@@ -291,13 +293,13 @@ export class CrowdfundingService {
   async createCrowdfundingReferral(
     referrerId: string,
     referreeId: string,
-    investmentId?: string
+    investmentId?: string,
   ) {
     // Check if referrer has an active investment (must invest before recruiting)
     const referrerInvestments = await this.getUserInvestments(referrerId);
     if (referrerInvestments.length === 0) {
       throw new Error(
-        "You must invest in a pool before you can make referrals"
+        "You must invest in a pool before you can make referrals",
       );
     }
 
@@ -308,8 +310,8 @@ export class CrowdfundingService {
       .where(
         and(
           eq(crowdfundingReferrals.referrerId, referrerId),
-          eq(crowdfundingReferrals.referreeId, referreeId)
-        )
+          eq(crowdfundingReferrals.referreeId, referreeId),
+        ),
       )
       .limit(1);
 
@@ -334,7 +336,7 @@ export class CrowdfundingService {
   // For signup flow - creates pending referral without requiring referrer to have invested
   async createPendingReferralFromSignup(
     referrerId: string,
-    referreeId: string
+    referreeId: string,
   ) {
     // Check if referral already exists
     const existingReferral = await db
@@ -343,8 +345,8 @@ export class CrowdfundingService {
       .where(
         and(
           eq(crowdfundingReferrals.referrerId, referrerId),
-          eq(crowdfundingReferrals.referreeId, referreeId)
-        )
+          eq(crowdfundingReferrals.referreeId, referreeId),
+        ),
       )
       .limit(1);
 
@@ -458,7 +460,7 @@ export class CrowdfundingService {
       targetParticipants: settings.systemTargetParticipants,
       progressPercent: Math.min(
         100,
-        (totalParticipants / settings.systemTargetParticipants) * 100
+        (totalParticipants / settings.systemTargetParticipants) * 100,
       ),
       totalInvested,
       eligibleForAirdrop,

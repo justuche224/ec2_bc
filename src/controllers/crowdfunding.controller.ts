@@ -18,6 +18,7 @@ const updateSettingsSchema = z.object({
 const createPoolSchema = z.object({
   name: z.string().min(1, "Pool name is required"),
   description: z.string().optional(),
+  beneficiaryFor: z.string().optional(),
   targetParticipants: z.number().min(1).optional(),
   minInvestmentAmount: z
     .number()
@@ -27,6 +28,7 @@ const createPoolSchema = z.object({
 const updatePoolSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
+  beneficiaryFor: z.string().optional(),
   targetParticipants: z.number().min(1).optional(),
   currentParticipants: z.number().min(0).optional(),
   totalInvested: z.number().min(0).optional(),
@@ -77,12 +79,12 @@ export class CrowdfundingController {
             error: "Invalid input",
             details: validationResult.error.flatten().fieldErrors,
           },
-          400
+          400,
         );
       }
 
       const result = await crowdfundingService.updateSettings(
-        validationResult.data
+        validationResult.data,
       );
       return c.json(result, 200);
     } catch (error: unknown) {
@@ -138,7 +140,7 @@ export class CrowdfundingController {
             error: "Invalid input",
             details: validationResult.error.flatten().fieldErrors,
           },
-          400
+          400,
         );
       }
 
@@ -175,13 +177,13 @@ export class CrowdfundingController {
             error: "Invalid input",
             details: validationResult.error.flatten().fieldErrors,
           },
-          400
+          400,
         );
       }
 
       const result = await crowdfundingService.updatePool(
         idValidation.data,
-        validationResult.data
+        validationResult.data,
       );
       return c.json(result, 200);
     } catch (error: unknown) {
@@ -238,7 +240,7 @@ export class CrowdfundingController {
             error: "Invalid input",
             details: validationResult.error.flatten().fieldErrors,
           },
-          400
+          400,
         );
       }
 
@@ -247,7 +249,7 @@ export class CrowdfundingController {
         user.id,
         idValidation.data,
         currency as Currency,
-        amount
+        amount,
       );
       return c.json(result, 201);
     } catch (error: unknown) {
@@ -316,13 +318,13 @@ export class CrowdfundingController {
             error: "Invalid input",
             details: validationResult.error.flatten().fieldErrors,
           },
-          400
+          400,
         );
       }
 
       const result = await crowdfundingService.updateInvestment(
         idValidation.data,
-        validationResult.data
+        validationResult.data,
       );
       return c.json(result, 200);
     } catch (error: unknown) {
@@ -373,7 +375,7 @@ export class CrowdfundingController {
       const result = await crowdfundingService.createCrowdfundingReferral(
         user.id,
         idValidation.data,
-        investmentId
+        investmentId,
       );
       return c.json(result, 201);
     } catch (error: unknown) {
@@ -403,7 +405,7 @@ export class CrowdfundingController {
       }
 
       const result = await crowdfundingService.markReferralComplete(
-        idValidation.data
+        idValidation.data,
       );
       return c.json(result, 200);
     } catch (error: unknown) {
