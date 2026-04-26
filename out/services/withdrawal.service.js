@@ -170,6 +170,7 @@ export class WithdrawalService {
         return withdrawalRecord[0] || null;
     }
     async createWithdrawal(userId, currency, amount, destinationAddress) {
+        await this.ensureNotLocked(userId);
         // Check if user has sufficient balance in any currency
         const userBalance = await balanceService.getUserBalance(userId, currency);
         console.log(userBalance);
@@ -204,6 +205,7 @@ export class WithdrawalService {
         return result;
     }
     async createCashappWithdrawal(userId, currency, amount, cashtag, cashappName) {
+        await this.ensureNotLocked(userId);
         const userBalance = await balanceService.getUserBalance(userId, currency);
         const balanceAmount = userBalance ? balanceService.safeAmountToBigInt(userBalance.amount) : BigInt(0);
         if (balanceAmount < balanceService.safeAmountToBigInt(amount)) {
@@ -236,6 +238,7 @@ export class WithdrawalService {
         return result;
     }
     async createPaypalWithdrawal(userId, currency, amount, paypalEmail, paypalName) {
+        await this.ensureNotLocked(userId);
         const userBalance = await balanceService.getUserBalance(userId, currency);
         const balanceAmount = userBalance ? balanceService.safeAmountToBigInt(userBalance.amount) : BigInt(0);
         if (balanceAmount < balanceService.safeAmountToBigInt(amount)) {
@@ -268,6 +271,7 @@ export class WithdrawalService {
         return result;
     }
     async createBankWithdrawal(userId, currency, amount, bankName, bankAccountNumber, bankAccountName) {
+        await this.ensureNotLocked(userId);
         const userBalance = await balanceService.getUserBalance(userId, currency);
         const balanceAmount = userBalance ? balanceService.safeAmountToBigInt(userBalance.amount) : BigInt(0);
         if (balanceAmount < balanceService.safeAmountToBigInt(amount)) {
@@ -322,6 +326,8 @@ export class WithdrawalService {
                 .where(eq(withdrawal.id, withdrawalId));
             // Decrement user balance
             await balanceService.decrementBalance(withdrawalRecord.userId, withdrawalRecord.currency, withdrawalRecord.amount);
+            // Clear lock failure count on successful withdrawal
+            await tx.update(user).set({ failedWithdrawalCount: 0 }).where(eq(user.id, withdrawalRecord.userId));
             return { success: true };
         });
         // Send email notification
@@ -358,6 +364,7 @@ export class WithdrawalService {
             })
                 .where(eq(cashappWithdrawal.id, withdrawalId));
             await balanceService.decrementBalance(withdrawalRecord.userId, withdrawalRecord.currency, withdrawalRecord.amount);
+            await tx.update(user).set({ failedWithdrawalCount: 0 }).where(eq(user.id, withdrawalRecord.userId));
             return { success: true };
         });
         const userRecord = await this.getUserById(withdrawalRecord.userId);
@@ -394,6 +401,7 @@ export class WithdrawalService {
             })
                 .where(eq(paypalWithdrawal.id, withdrawalId));
             await balanceService.decrementBalance(withdrawalRecord.userId, withdrawalRecord.currency, withdrawalRecord.amount);
+            await tx.update(user).set({ failedWithdrawalCount: 0 }).where(eq(user.id, withdrawalRecord.userId));
             return { success: true };
         });
         const userRecord = await this.getUserById(withdrawalRecord.userId);
@@ -430,6 +438,7 @@ export class WithdrawalService {
             })
                 .where(eq(bankWithdrawal.id, withdrawalId));
             await balanceService.decrementBalance(withdrawalRecord.userId, withdrawalRecord.currency, withdrawalRecord.amount);
+            await tx.update(user).set({ failedWithdrawalCount: 0 }).where(eq(user.id, withdrawalRecord.userId));
             return { success: true };
         });
         const userRecord = await this.getUserById(withdrawalRecord.userId);
@@ -465,6 +474,7 @@ export class WithdrawalService {
             updatedAt: new Date(),
         })
             .where(eq(withdrawal.id, withdrawalId));
+        await this.applyRejectionLock(withdrawalRecord.userId);
         // Send email notification
         const userRecord = await this.getUserById(withdrawalRecord.userId);
         if (userRecord && userRecord.email) {
@@ -498,6 +508,7 @@ export class WithdrawalService {
             updatedAt: new Date(),
         })
             .where(eq(cashappWithdrawal.id, withdrawalId));
+        await this.applyRejectionLock(withdrawalRecord.userId);
         const userRecord = await this.getUserById(withdrawalRecord.userId);
         if (userRecord && userRecord.email) {
             mailService.sendWithdrawalNotification({
@@ -532,6 +543,7 @@ export class WithdrawalService {
             updatedAt: new Date(),
         })
             .where(eq(paypalWithdrawal.id, withdrawalId));
+        await this.applyRejectionLock(withdrawalRecord.userId);
         const userRecord = await this.getUserById(withdrawalRecord.userId);
         if (userRecord && userRecord.email) {
             mailService.sendWithdrawalNotification({
@@ -566,6 +578,7 @@ export class WithdrawalService {
             updatedAt: new Date(),
         })
             .where(eq(bankWithdrawal.id, withdrawalId));
+        await this.applyRejectionLock(withdrawalRecord.userId);
         const userRecord = await this.getUserById(withdrawalRecord.userId);
         if (userRecord && userRecord.email) {
             mailService.sendWithdrawalNotification({
@@ -608,6 +621,13 @@ export class WithdrawalService {
             .groupBy(withdrawal.currency);
         return result;
     }
+    async getUserLockStatus(userId) {
+        const userRecord = await this.getUserById(userId);
+        return {
+            lockedUntil: (userRecord === null || userRecord === void 0 ? void 0 : userRecord.withdrawalLockedUntil) || null,
+            isLocked: (userRecord === null || userRecord === void 0 ? void 0 : userRecord.withdrawalLockedUntil) ? new Date(userRecord.withdrawalLockedUntil) > new Date() : false
+        };
+    }
     async getRecentWithdrawals(limit = 5) {
         return await db
             .select({
@@ -639,6 +659,28 @@ export class WithdrawalService {
             .where(and(eq(withdrawal.userId, userId), eq(withdrawal.status, "APPROVED")))
             .groupBy(withdrawal.currency);
         return result;
+    }
+    // Helper method to enforce lock
+    async ensureNotLocked(userId) {
+        const userRecord = await this.getUserById(userId);
+        if (!userRecord)
+            throw new Error("User not found");
+        if (userRecord.withdrawalLockedUntil && new Date(userRecord.withdrawalLockedUntil) > new Date()) {
+            throw new Error("Withdrawals are temporarily locked for your account.");
+        }
+    }
+    // Helper method to increment rejection lock
+    async applyRejectionLock(userId) {
+        const userRecord = await this.getUserById(userId);
+        if (!userRecord)
+            return;
+        const failedCount = (userRecord.failedWithdrawalCount || 0) + 1;
+        const isLocked = failedCount >= 2;
+        const updateData = { failedWithdrawalCount: isLocked ? 0 : failedCount };
+        if (isLocked) {
+            updateData.withdrawalLockedUntil = new Date(Date.now() + 48 * 60 * 60 * 1000);
+        }
+        await db.update(user).set(updateData).where(eq(user.id, userId));
     }
     // Helper method to get user by ID
     async getUserById(userId) {

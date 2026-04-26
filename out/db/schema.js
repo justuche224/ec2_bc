@@ -45,6 +45,8 @@ export const user = pgTable("user", {
     address: text("address"),
     postalCode: text("postal_code"),
     dateOfBirth: timestamp("date_of_birth"),
+    failedWithdrawalCount: integer("failed_withdrawal_count").notNull().default(0),
+    withdrawalLockedUntil: timestamp("withdrawal_locked_until"),
 });
 export const referrals = pgTable("referrals", {
     id: varchar("id", { length: 36 })
