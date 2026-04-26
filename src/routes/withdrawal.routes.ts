@@ -8,6 +8,7 @@ const withdrawalRouter = new Hono();
 withdrawalRouter.use("*", requireAuth);
 
 // User withdrawal routes
+withdrawalRouter.get("/lock-status", WithdrawalController.getLockStatus);
 withdrawalRouter.post("/", WithdrawalController.createWithdrawal);
 withdrawalRouter.get("/", WithdrawalController.getUserWithdrawals);
 withdrawalRouter.post("/cashapp", WithdrawalController.createCashappWithdrawal);

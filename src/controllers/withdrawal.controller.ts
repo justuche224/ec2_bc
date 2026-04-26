@@ -87,6 +87,26 @@ export class WithdrawalController {
     }
   }
 
+  static async getLockStatus(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user) {
+        return c.json({ error: "Unauthorized: No user found" }, 401);
+      }
+      const status = await withdrawalService.getUserLockStatus(user.id);
+      return c.json({ data: status }, 200);
+    } catch (error) {
+      console.error("Error getting lock status:", error);
+      return c.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to get lock status",
+        },
+        500
+      );
+    }
+  }
+
   static async createWithdrawal(c: Context) {
     try {
       const user = c.get("user");
