@@ -1,9 +1,17 @@
 import type { Context } from "hono";
 import { ReferralService } from "../services/referral.service.js";
 import { CrowdfundingService } from "../services/crowdfunding.service.js";
+import { z } from "zod";
 
 const referralService = ReferralService.getInstance();
 const crowdfundingService = CrowdfundingService.getInstance();
+
+const adminCreateReferralSchema = z.object({
+  referrerId: z.string().min(1, "Referrer ID is required"),
+  referreeId: z.string().min(1, "Referree ID is required"),
+  rewardAmount: z.string().default("50"),
+  adjustBalance: z.boolean().default(false),
+});
 
 export class ReferralController {
   // Public endpoint for signup referrals - no auth required
@@ -105,7 +113,15 @@ export class ReferralController {
         return c.json({ error: "Unauthorized: No user found" }, 401);
       }
 
-      const referrals = await referralService.getReferralsByReferrerId(user.id);
+      let targetUserId = user.id;
+      if (user.role === "ADMIN") {
+        const queryUserId = c.req.query("userId");
+        if (queryUserId) {
+          targetUserId = queryUserId;
+        }
+      }
+
+      const referrals = await referralService.getReferralsByReferrerId(targetUserId);
       return c.json({ data: referrals }, 200);
     } catch (error) {
       console.error("Error getting user referrals:", error);
@@ -139,6 +155,73 @@ export class ReferralController {
         },
         500
       );
+    }
+  }
+
+  static async adminCreateReferral(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Forbidden: Admin access required" }, 403);
+      }
+
+      const body = await c.req.json();
+      const validationResult = adminCreateReferralSchema.safeParse(body);
+
+      if (!validationResult.success) {
+        return c.json(
+          {
+            error: "Invalid input",
+            details: validationResult.error.flatten().fieldErrors,
+          },
+          400
+        );
+      }
+
+      const { referrerId, referreeId, rewardAmount, adjustBalance } =
+        validationResult.data;
+
+      if (referrerId === referreeId) {
+        return c.json({ error: "Referrer and referree cannot be the same" }, 400);
+      }
+
+      const referral = await referralService.adminCreateReferral(
+        referrerId,
+        referreeId,
+        rewardAmount,
+        adjustBalance
+      );
+
+      return c.json({ data: referral }, 201);
+    } catch (error: unknown) {
+      console.error("Error admin-creating referral:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create referral";
+      const statusCode = errorMessage.includes("not found") ? 400 : 500;
+      return c.json({ error: errorMessage }, statusCode);
+    }
+  }
+
+  static async deleteReferral(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Forbidden: Admin access required" }, 403);
+      }
+
+      const referralId = c.req.param("id");
+      if (!referralId) {
+        return c.json({ error: "Referral ID is required" }, 400);
+      }
+
+      await referralService.deleteReferral(referralId);
+      return c.json({ message: "Referral deleted successfully" }, 200);
+    } catch (error: unknown) {
+      console.error("Error deleting referral:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to delete referral";
+      const statusCode = errorMessage.includes("not found") ? 404 : 500;
+      return c.json({ error: errorMessage }, statusCode);
     }
   }
 }

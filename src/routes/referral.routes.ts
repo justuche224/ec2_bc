@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth, requireAdmin } from "../middleware/auth.js";
 import { ReferralController } from "../controllers/referral.controller.js";
 
 const referralRouter = new Hono();
@@ -14,5 +14,9 @@ referralRouter.use("/*", requireAuth);
 referralRouter.post("/", ReferralController.createReferral);
 referralRouter.get("/", ReferralController.getUserReferrals);
 referralRouter.get("/stats", ReferralController.getReferralStats);
+
+// Admin referral routes
+referralRouter.post("/admin/create", requireAdmin, ReferralController.adminCreateReferral);
+referralRouter.delete("/admin/:id", requireAdmin, ReferralController.deleteReferral);
 
 export default referralRouter;

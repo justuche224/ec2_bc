@@ -27,6 +27,16 @@ investmentRouter.post(
   requireAdmin,
   InvestmentController.updateInvestmentProfit
 );
+investmentRouter.post(
+  "/admin/create",
+  requireAdmin,
+  InvestmentController.adminCreateInvestment
+);
+investmentRouter.delete(
+  "/admin/:id",
+  requireAdmin,
+  InvestmentController.deleteInvestment
+);
 
 // Dynamic routes - MUST come after specific routes like /all
 investmentRouter.get("/:id", InvestmentController.getInvestmentById);

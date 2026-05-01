@@ -72,6 +72,7 @@ export const referrals = pgTable("referrals", {
   referreeId: varchar("referree_id", { length: 36 })
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  rewardAmount: varchar("reward_amount", { length: 255 }).notNull().default("50"),
   createdAt: timestamp("created_at").notNull(),
 });
 

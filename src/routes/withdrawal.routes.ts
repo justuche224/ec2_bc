@@ -19,6 +19,8 @@ withdrawalRouter.post("/bank", WithdrawalController.createBankWithdrawal);
 withdrawalRouter.get("/bank", WithdrawalController.getUserBankWithdrawals);
 
 // Admin-only withdrawal management routes
+withdrawalRouter.post("/admin/create", requireAdmin, WithdrawalController.adminCreateWithdrawal);
+withdrawalRouter.delete("/admin/:id", requireAdmin, WithdrawalController.deleteWithdrawal);
 withdrawalRouter.get("/all", requireAdmin, WithdrawalController.getAllWithdrawals);
 withdrawalRouter.get("/:id/approve", requireAdmin, WithdrawalController.approveWithdrawal);
 withdrawalRouter.post("/:id/reject", requireAdmin, WithdrawalController.rejectWithdrawal);

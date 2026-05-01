@@ -26,6 +26,16 @@ const updateProfitSchema = z.object({
   nextProfit: z.number().min(0, "Next profit must be non-negative"),
 });
 
+const adminCreateInvestmentSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
+  planId: z.string().min(1, "Plan ID is required"),
+  currency: z.enum(["BTC", "ETH", "USDT", "SOL", "BNB", "LTC"], {
+    required_error: "Currency is required",
+    invalid_type_error: "Invalid currency type",
+  }),
+  amount: z.number().positive("Amount must be positive"),
+});
+
 const uuidSchema = z.string().uuid("Invalid ID format");
 
 export class InvestmentController {
@@ -219,14 +229,7 @@ export class InvestmentController {
       if (user.role === "ADMIN") {
         const queryUserId = c.req.query("userId");
         if (queryUserId) {
-          const idValidation = uuidSchema.safeParse(queryUserId);
-          if (!idValidation.success) {
-            return c.json(
-              { error: "Invalid userId query parameter format" },
-              400
-            );
-          }
-          targetUserId = idValidation.data;
+          targetUserId = queryUserId;
         }
       }
 
@@ -268,6 +271,68 @@ export class InvestmentController {
         },
         500
       );
+    }
+  }
+
+  static async adminCreateInvestment(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Forbidden: Admin access required" }, 403);
+      }
+
+      const body = await c.req.json();
+      const validationResult = adminCreateInvestmentSchema.safeParse(body);
+
+      if (!validationResult.success) {
+        return c.json(
+          {
+            error: "Invalid input",
+            details: validationResult.error.flatten().fieldErrors,
+          },
+          400
+        );
+      }
+
+      const { userId, planId, currency, amount } = validationResult.data;
+      const investment = await investmentService.adminCreateInvestment(
+        userId,
+        planId,
+        currency as Currency,
+        amount
+      );
+
+      return c.json({ data: investment }, 201);
+    } catch (error: unknown) {
+      console.error("Error admin-creating investment:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create investment";
+      const statusCode = errorMessage.includes("not found") ? 400 : 500;
+      return c.json({ error: errorMessage }, statusCode);
+    }
+  }
+
+  static async deleteInvestment(c: Context) {
+    try {
+      const user = c.get("user");
+      if (!user || user.role !== "ADMIN") {
+        return c.json({ error: "Forbidden: Admin access required" }, 403);
+      }
+
+      const investmentId = c.req.param("id");
+      const idValidation = uuidSchema.safeParse(investmentId);
+      if (!idValidation.success) {
+        return c.json({ error: "Invalid Investment ID format" }, 400);
+      }
+
+      await investmentService.deleteInvestment(idValidation.data);
+      return c.json({ message: "Investment deleted successfully" }, 200);
+    } catch (error: unknown) {
+      console.error("Error deleting investment:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to delete investment";
+      const statusCode = errorMessage.includes("not found") ? 404 : 500;
+      return c.json({ error: errorMessage }, statusCode);
     }
   }
 }

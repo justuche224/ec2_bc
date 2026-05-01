@@ -1,0 +1,1 @@
+ALTER TABLE "referrals" ADD COLUMN "reward_amount" varchar(255) DEFAULT '50' NOT NULL;
