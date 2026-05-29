@@ -58,6 +58,7 @@ export const referrals = pgTable("referrals", {
     referreeId: varchar("referree_id", { length: 36 })
         .notNull()
         .references(() => user.id, { onDelete: "cascade" }),
+    rewardAmount: varchar("reward_amount", { length: 255 }).notNull().default("50"),
     createdAt: timestamp("created_at").notNull(),
 });
 export const referralsRelations = relations(referrals, ({ one }) => ({
@@ -70,6 +71,34 @@ export const referralsRelations = relations(referrals, ({ one }) => ({
         fields: [referrals.referreeId],
         references: [user.id],
         relationName: "referree",
+    }),
+}));
+export const beneficiaries = pgTable("beneficiaries", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    fullName: text("full_name").notNull(),
+    relationship: text("relationship").notNull(),
+    email: text("email"),
+    phone: text("phone"),
+    address: text("address"),
+    city: text("city"),
+    country: text("country"),
+    postalCode: text("postal_code"),
+    dateOfBirth: timestamp("date_of_birth"),
+    bankName: text("bank_name"),
+    bankAccountNumber: text("bank_account_number"),
+    bankAccountName: text("bank_account_name"),
+    createdAt: timestamp("created_at").notNull(),
+    updatedAt: timestamp("updated_at").notNull(),
+});
+export const beneficiariesRelations = relations(beneficiaries, ({ one }) => ({
+    user: one(user, {
+        fields: [beneficiaries.userId],
+        references: [user.id],
     }),
 }));
 export const session = pgTable("session", {
@@ -470,6 +499,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
     referralsMade: many(referrals, { relationName: "referrer" }),
     referralsReceived: many(referrals, { relationName: "referree" }),
     investments: many(investments),
+    beneficiaries: many(beneficiaries),
 }));
 export const productCategory = pgTable("product_category", {
     id: varchar("id", { length: 36 })

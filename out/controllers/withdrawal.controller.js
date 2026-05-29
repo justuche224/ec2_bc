@@ -1,5 +1,11 @@
 import { WithdrawalService } from "../services/withdrawal.service.js";
+import { z } from "zod";
 const withdrawalService = WithdrawalService.getInstance();
+const adminCreateWithdrawalSchema = z.object({
+    userId: z.string().min(1, "User ID is required"),
+    currency: z.enum(["BTC", "ETH", "USDT", "SOL", "BNB", "LTC"]),
+    amount: z.string().min(1, "Amount is required"),
+});
 export class WithdrawalController {
     static async getAllWithdrawals(c) {
         try {
@@ -404,6 +410,51 @@ export class WithdrawalController {
             return c.json({
                 error: error instanceof Error ? error.message : "Failed to get approved withdrawals",
             }, 500);
+        }
+    }
+    static async adminCreateWithdrawal(c) {
+        try {
+            const user = c.get("user");
+            if (!user || user.role !== "ADMIN") {
+                return c.json({ error: "Forbidden: Admin access required" }, 403);
+            }
+            const body = await c.req.json();
+            const validationResult = adminCreateWithdrawalSchema.safeParse(body);
+            if (!validationResult.success) {
+                return c.json({
+                    error: "Invalid input",
+                    details: validationResult.error.flatten().fieldErrors,
+                }, 400);
+            }
+            const { userId, currency, amount } = validationResult.data;
+            const withdrawal = await withdrawalService.adminCreateWithdrawal(userId, currency, amount);
+            return c.json({ data: withdrawal }, 201);
+        }
+        catch (error) {
+            console.error("Error admin-creating withdrawal:", error);
+            const errorMessage = error instanceof Error ? error.message : "Failed to create withdrawal";
+            const statusCode = errorMessage.includes("not found") ? 400 : 500;
+            return c.json({ error: errorMessage }, statusCode);
+        }
+    }
+    static async deleteWithdrawal(c) {
+        try {
+            const user = c.get("user");
+            if (!user || user.role !== "ADMIN") {
+                return c.json({ error: "Forbidden: Admin access required" }, 403);
+            }
+            const withdrawalId = c.req.param("id");
+            if (!withdrawalId) {
+                return c.json({ error: "Withdrawal ID is required" }, 400);
+            }
+            await withdrawalService.deleteWithdrawal(withdrawalId);
+            return c.json({ message: "Withdrawal deleted successfully" }, 200);
+        }
+        catch (error) {
+            console.error("Error deleting withdrawal:", error);
+            const errorMessage = error instanceof Error ? error.message : "Failed to delete withdrawal";
+            const statusCode = errorMessage.includes("not found") ? 404 : 500;
+            return c.json({ error: errorMessage }, statusCode);
         }
     }
 }

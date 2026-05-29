@@ -660,6 +660,36 @@ export class WithdrawalService {
             .groupBy(withdrawal.currency);
         return result;
     }
+    async adminCreateWithdrawal(userId, currency, amount) {
+        const userRecord = await this.getUserById(userId);
+        if (!userRecord) {
+            throw new Error("User not found");
+        }
+        const newWithdrawal = {
+            userId,
+            currency,
+            amount,
+            status: "APPROVED",
+            destinationAddress: "admin-adjustment",
+            approvedAt: new Date(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
+        const result = await db.insert(withdrawal).values(newWithdrawal).returning();
+        return result[0];
+    }
+    async deleteWithdrawal(withdrawalId) {
+        const result = await db
+            .select()
+            .from(withdrawal)
+            .where(eq(withdrawal.id, withdrawalId))
+            .limit(1);
+        if (!result[0]) {
+            throw new Error("Withdrawal not found");
+        }
+        await db.delete(withdrawal).where(eq(withdrawal.id, withdrawalId));
+        return { success: true };
+    }
     // Helper method to enforce lock
     async ensureNotLocked(userId) {
         const userRecord = await this.getUserById(userId);

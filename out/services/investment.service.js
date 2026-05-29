@@ -151,8 +151,43 @@ export class InvestmentService {
         }
         return { success: true };
     }
+    async adminCreateInvestment(userId, planId, currency, amount) {
+        const plan = await plansService.getPlan(planId);
+        if (!plan) {
+            throw new Error("Plan not found");
+        }
+        const userRecord = await this.getUserById(userId);
+        if (!userRecord) {
+            throw new Error("User not found");
+        }
+        const newInvestment = {
+            id: uuidv4(),
+            userId,
+            planId,
+            currency,
+            txn: `admin_${uuidv4()}`,
+            amount,
+            targetProfit: plan.maxRoiAmount,
+            currentProfit: 0,
+            status: "ACTIVE",
+            noOfROI: plan.duration,
+            profitPercent: plan.percentage,
+            nextProfit: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
+        await db.insert(investments).values(newInvestment);
+        return await this.getInvestmentById(newInvestment.id);
+    }
+    async deleteInvestment(investmentId) {
+        const investment = await this.getInvestmentById(investmentId);
+        if (!investment) {
+            throw new Error("Investment not found");
+        }
+        await db.delete(investments).where(eq(investments.id, investmentId));
+        return { success: true };
+    }
     async deleteInvestments(investmentIds) {
-        // Optional: Add logic here to revert balance changes or handle ROI if needed before deleting
         const result = await db
             .delete(investments)
             .where(inArray(investments.id, investmentIds));
