@@ -15,8 +15,14 @@ referralRouter.post("/", ReferralController.createReferral);
 referralRouter.get("/", ReferralController.getUserReferrals);
 referralRouter.get("/stats", ReferralController.getReferralStats);
 
+// Commission routes
+referralRouter.get("/commissions/pending", ReferralController.getPendingCommissions);
+referralRouter.post("/commissions/withdraw", ReferralController.withdrawCommissions);
+
 // Admin referral routes
 referralRouter.post("/admin/create", requireAdmin, ReferralController.adminCreateReferral);
 referralRouter.delete("/admin/:id", requireAdmin, ReferralController.deleteReferral);
+referralRouter.get("/admin/commissions/requests", requireAdmin, ReferralController.adminGetRequestedCommissions);
+referralRouter.post("/admin/commissions/approve/:id", requireAdmin, ReferralController.adminApproveCommission);
 
 export default referralRouter;

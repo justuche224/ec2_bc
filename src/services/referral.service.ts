@@ -40,16 +40,11 @@ export class ReferralService {
     await db.insert(referrals).values({
         referrerId,
         referreeId,
+        status: "PENDING",
         createdAt: new Date(),
     });
 
-    try {
-      await this.balanceService.incrementBalance(referrerId, "USDT", "50");
-    } catch (error) {
-      console.error("Failed to reward referrer:", error);
-    }
-
-    return { success: true, message: "Referral created and reward processed" };
+    return { success: true, message: "Referral created. Commission is pending." };
   }
 
   async getReferralsByReferrerId(referrerId: string) {
@@ -74,10 +69,19 @@ export class ReferralService {
       BigInt(0)
     ).toString();
 
+    // Calculate Rank
+    let rank = "Bronze Affiliate";
+    if (totalReferrals >= 500) rank = "Ambassador";
+    else if (totalReferrals >= 100) rank = "Diamond Affiliate";
+    else if (totalReferrals >= 50) rank = "Platinum Affiliate";
+    else if (totalReferrals >= 20) rank = "Gold Affiliate";
+    else if (totalReferrals >= 5) rank = "Silver Affiliate";
+
     return {
       totalReferrals,
       totalRewards,
       currency: "USDT",
+      rank,
     };
   }
 
@@ -139,5 +143,94 @@ export class ReferralService {
 
     await db.delete(referrals).where(eq(referrals.id, referralId));
     return { success: true };
+  }
+
+  async getPendingCommissions(userId: string) {
+    const pendingReferrals = await db
+      .select()
+      .from(referrals)
+      .where(and(eq(referrals.referrerId, userId), eq(referrals.status, "PENDING")));
+
+    const totalPending = pendingReferrals.reduce(
+      (sum, r) => sum + BigInt(r.rewardAmount || "50"),
+      BigInt(0)
+    ).toString();
+
+    return {
+      totalPending,
+      pendingCount: pendingReferrals.length,
+      currency: "USDT",
+      referrals: pendingReferrals,
+    };
+  }
+
+  async withdrawCommissions(userId: string) {
+    const pendingReferrals = await db
+      .select()
+      .from(referrals)
+      .where(and(eq(referrals.referrerId, userId), eq(referrals.status, "PENDING")));
+
+    if (pendingReferrals.length === 0) {
+      throw new Error("No pending commissions to withdraw");
+    }
+
+    const totalReward = pendingReferrals.reduce(
+      (sum, r) => sum + BigInt(r.rewardAmount || "50"),
+      BigInt(0)
+    ).toString();
+
+    // Mark them as REQUESTED
+    await db
+      .update(referrals)
+      .set({ status: "REQUESTED" })
+      .where(and(eq(referrals.referrerId, userId), eq(referrals.status, "PENDING")));
+
+    return {
+      success: true,
+      message: `Successfully requested withdrawal of ${totalReward} USDT. Pending admin approval.`,
+      amount: totalReward,
+    };
+  }
+
+  async getRequestedCommissions() {
+    // Returns users with REQUESTED commissions and their totals
+    const requestedReferrals = await db
+      .select({
+        id: referrals.id,
+        referrerId: referrals.referrerId,
+        rewardAmount: referrals.rewardAmount,
+        createdAt: referrals.createdAt,
+      })
+      .from(referrals)
+      .where(eq(referrals.status, "REQUESTED"));
+
+    return requestedReferrals;
+  }
+
+  async approveCommission(referralId: string) {
+    const referralResult = await db
+      .select()
+      .from(referrals)
+      .where(and(eq(referrals.id, referralId), eq(referrals.status, "REQUESTED")))
+      .limit(1);
+
+    const ref = referralResult[0];
+    if (!ref) {
+      throw new Error("Commission request not found or already processed");
+    }
+
+    await db
+      .update(referrals)
+      .set({ status: "PAID" })
+      .where(eq(referrals.id, referralId));
+
+    try {
+      await this.balanceService.incrementBalance(ref.referrerId, "USDT", ref.rewardAmount || "50");
+    } catch (error) {
+      console.error("Failed to add balance on commission approval:", error);
+      throw new Error("Failed to process commission payment");
+    }
+
+    return { success: true, message: "Commission approved and paid" };
   }
 }
