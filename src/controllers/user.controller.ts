@@ -27,6 +27,22 @@ export class UserController {
     }
   }
 
+  static async getPublicUser(c: Context) {
+    try {
+      const userId = c.req.param("id");
+      const userData = await userService.getPublicUser(userId);
+      return c.json(userData, 200);
+    } catch (error) {
+      console.error("Error getting public user:", error);
+      return c.json(
+        {
+          error: error instanceof Error ? error.message : "Failed to get user",
+        },
+        404
+      );
+    }
+  }
+
   static async getAllUsers(c: Context) {
     try {
       const user = c.get("user");
@@ -147,15 +163,8 @@ export class UserController {
 
   static async getProfilePicture(c: Context) {
     try {
-      const user = c.get("user");
-      if (!user) {
-        return c.json({ error: "Unauthorized: No user found" }, 401);
-      }
-
       const filename = c.req.param("filename");
-      const isAdmin = user.role === "ADMIN";
-
-      const fileBuffer = await userService.getProfilePicture(filename, user.id, isAdmin);
+      const fileBuffer = await userService.getProfilePicture(filename);
       return new Response(fileBuffer, {
         status: 200,
         headers: {
@@ -166,7 +175,7 @@ export class UserController {
       console.error("Error getting profile picture:", error);
       return new Response(
         error instanceof Error ? error.message : "File not found",
-        { status: error instanceof Error && error.message.includes("Unauthorized") ? 403 : 404 }
+        { status: 404 }
       );
     }
   }

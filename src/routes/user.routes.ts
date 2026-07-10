@@ -4,7 +4,11 @@ import { requireAuth, requireAdmin } from "../middleware/auth.js";
 
 const userRouter = new Hono();
 
-// Apply authentication middleware to all user routes
+// Public routes
+userRouter.get("/public/:id", UserController.getPublicUser);
+userRouter.get("/profile-picture/:filename", UserController.getProfilePicture);
+
+// Apply authentication middleware to all other user routes
 userRouter.use("*", requireAuth);
 
 // Get a single user (accessible by the user themselves or admin)
@@ -19,8 +23,7 @@ userRouter.delete("/", requireAdmin, UserController.deleteUsers);
 // Update user info (accessible by the user themselves or admin)
 userRouter.put("/:id", UserController.updateUserInfo);
 
-// Profile picture routes
+// Profile picture routes (update only, get is public)
 userRouter.put("/:id/profile-picture", UserController.updateProfilePicture);
-userRouter.get("/profile-picture/:filename", UserController.getProfilePicture);
 
 export default userRouter; 
