@@ -113,6 +113,42 @@ export class ReferralController {
             }, 500);
         }
     }
+    static async getPendingCommissions(c) {
+        try {
+            const user = c.get("user");
+            if (!user) {
+                return c.json({ error: "Unauthorized: No user found" }, 401);
+            }
+            const pending = await referralService.getPendingCommissions(user.id);
+            return c.json({ data: pending }, 200);
+        }
+        catch (error) {
+            console.error("Error getting pending commissions:", error);
+            return c.json({
+                error: error instanceof Error
+                    ? error.message
+                    : "Failed to get pending commissions",
+            }, 500);
+        }
+    }
+    static async withdrawCommissions(c) {
+        try {
+            const user = c.get("user");
+            if (!user) {
+                return c.json({ error: "Unauthorized: No user found" }, 401);
+            }
+            const result = await referralService.withdrawCommissions(user.id);
+            return c.json({ data: result }, 200);
+        }
+        catch (error) {
+            console.error("Error withdrawing commissions:", error);
+            return c.json({
+                error: error instanceof Error
+                    ? error.message
+                    : "Failed to withdraw commissions",
+            }, 400);
+        }
+    }
     static async adminCreateReferral(c) {
         try {
             const user = c.get("user");
@@ -159,6 +195,38 @@ export class ReferralController {
             const errorMessage = error instanceof Error ? error.message : "Failed to delete referral";
             const statusCode = errorMessage.includes("not found") ? 404 : 500;
             return c.json({ error: errorMessage }, statusCode);
+        }
+    }
+    static async adminGetRequestedCommissions(c) {
+        try {
+            const user = c.get("user");
+            if (!user || user.role !== "ADMIN") {
+                return c.json({ error: "Forbidden: Admin access required" }, 403);
+            }
+            const requests = await referralService.getRequestedCommissions();
+            return c.json({ data: requests }, 200);
+        }
+        catch (error) {
+            console.error("Error getting requested commissions:", error);
+            return c.json({ error: "Failed to get commission requests" }, 500);
+        }
+    }
+    static async adminApproveCommission(c) {
+        try {
+            const user = c.get("user");
+            if (!user || user.role !== "ADMIN") {
+                return c.json({ error: "Forbidden: Admin access required" }, 403);
+            }
+            const referralId = c.req.param("id");
+            if (!referralId) {
+                return c.json({ error: "Referral ID is required" }, 400);
+            }
+            const result = await referralService.approveCommission(referralId);
+            return c.json({ data: result }, 200);
+        }
+        catch (error) {
+            console.error("Error approving commission:", error);
+            return c.json({ error: error instanceof Error ? error.message : "Failed to approve commission" }, 400);
         }
     }
 }

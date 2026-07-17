@@ -29,6 +29,22 @@ export class UserService {
         }
         return userRecord[0];
     }
+    async getPublicUser(userId) {
+        const userRecord = await db
+            .select({
+            id: user.id,
+            name: user.name,
+            image: user.image,
+            createdAt: user.createdAt,
+        })
+            .from(user)
+            .where(eq(user.id, userId))
+            .limit(1);
+        if (!userRecord.length) {
+            throw new Error("User not found");
+        }
+        return userRecord[0];
+    }
     async getAllUsers() {
         const users = await db
             .select()
@@ -115,7 +131,7 @@ export class UserService {
             imageUrl: `${process.env.BASE_URL}/api/user/profile-picture/${filename}`,
         };
     }
-    async getProfilePicture(filename, requestingUserId, isAdmin) {
+    async getProfilePicture(filename) {
         const userRecord = await db
             .select()
             .from(user)
@@ -123,10 +139,6 @@ export class UserService {
             .limit(1);
         if (!userRecord.length) {
             throw new Error("Profile picture not found");
-        }
-        // Only allow access if user is admin or requesting their own picture
-        if (!isAdmin && userRecord[0].id !== requestingUserId) {
-            throw new Error("Unauthorized: You can only view your own profile picture");
         }
         const filepath = join(config.storage.profileImages, filename);
         return await readFile(filepath);
