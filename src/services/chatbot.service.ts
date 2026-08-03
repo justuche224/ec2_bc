@@ -47,6 +47,12 @@ Answer the user's questions truthfully and accurately using ONLY the context pro
 Keep answers short and friendly. Do not make up facts or speak outside the provided context.
 If the answer cannot be found in the context, politely say you could not find that information and ask the user to email support@ecohavest.org.
 
+Formatting rules — your reply is shown in a small chat bubble, not a document:
+- Plain conversational text only. Never use markdown bold (**), italics, headings (#), or bracketed links.
+- Keep replies under about 100 words.
+- For steps or options, use short lines starting with "- " or "1.".
+- Write URLs bare (https://...), never as [text](url).
+
 Context:
 ${knowledge}`;
   }
