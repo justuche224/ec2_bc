@@ -1,0 +1,94 @@
+import { describe, expect, it, beforeEach, jest } from '@jest/globals';
+import { join } from 'path';
+import { ChatbotService } from '../services/chatbot.service.js';
+
+const FIXTURE_PATH = join(process.cwd(), 'src', '__tests__', 'fixtures', 'knowledge.md');
+
+function geminiOk(text: string) {
+  return {
+    ok: true,
+    json: async () => ({
+      candidates: [{ content: { parts: [{ text }] } }],
+    }),
+  } as Response;
+}
+
+describe('ChatbotService', () => {
+  const service = ChatbotService.getInstance();
+  let fetchMock: jest.Mock<typeof fetch>;
+
+  beforeEach(() => {
+    process.env.GEMINI_API_KEY = 'test-key';
+    process.env.KNOWLEDGE_PATH = FIXTURE_PATH;
+    delete process.env.GEMINI_MODEL;
+    service.resetKnowledgeCache();
+    fetchMock = jest.fn<typeof fetch>();
+    global.fetch = fetchMock as unknown as typeof fetch;
+  });
+
+  it('returns Gemini reply text on success', async () => {
+    fetchMock.mockResolvedValue(geminiOk('Withdrawals take 24 hours.'));
+    const result = await service.query('How long do withdrawals take?', []);
+    expect(result.text).toBe('Withdrawals take 24 hours.');
+  });
+
+  it('sends knowledge in systemInstruction and maps history roles', async () => {
+    fetchMock.mockResolvedValue(geminiOk('ok'));
+    await service.query('follow-up', [
+      { sender: 'user', text: 'hi' },
+      { sender: 'bot', text: 'hello' },
+    ]);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toContain('gemini-2.5-flash-lite:generateContent');
+    const body = JSON.parse(init.body as string);
+    expect(body.systemInstruction.parts[0].text).toContain('EcoHarvest Test Knowledge');
+    expect(body.contents).toEqual([
+      { role: 'user', parts: [{ text: 'hi' }] },
+      { role: 'model', parts: [{ text: 'hello' }] },
+      { role: 'user', parts: [{ text: 'follow-up' }] },
+    ]);
+    expect((init.headers as Record<string, string>)['x-goog-api-key']).toBe('test-key');
+  });
+
+  it('trims history to the last 10 turns', async () => {
+    fetchMock.mockResolvedValue(geminiOk('ok'));
+    const history = Array.from({ length: 30 }, (_, i) => ({
+      sender: (i % 2 === 0 ? 'user' : 'bot') as 'user' | 'bot',
+      text: `turn ${i}`,
+    }));
+    await service.query('latest', history);
+    const body = JSON.parse((fetchMock.mock.calls[0] as [string, RequestInit])[1].body as string);
+    expect(body.contents).toHaveLength(11); // 10 history turns + current message
+    expect(body.contents[0].parts[0].text).toBe('turn 20');
+  });
+
+  it('falls back to support message when fetch rejects', async () => {
+    fetchMock.mockRejectedValue(new Error('network down'));
+    const result = await service.query('anything', []);
+    expect(result.text).toContain('support@ecohavest.org');
+  });
+
+  it('falls back when Gemini returns a non-OK response', async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 429,
+      text: async () => 'quota exceeded',
+    } as Response);
+    const result = await service.query('anything', []);
+    expect(result.text).toContain('support@ecohavest.org');
+  });
+
+  it('falls back without calling Gemini when API key is missing', async () => {
+    delete process.env.GEMINI_API_KEY;
+    const result = await service.query('anything', []);
+    expect(result.text).toContain('support@ecohavest.org');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('falls back when the knowledge file cannot be read', async () => {
+    process.env.KNOWLEDGE_PATH = '/nonexistent/knowledge.md';
+    const result = await service.query('anything', []);
+    expect(result.text).toContain('support@ecohavest.org');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
