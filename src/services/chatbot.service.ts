@@ -52,7 +52,7 @@ ${knowledge}`;
   }
 
   async query(message: string, history: ChatTurn[]): Promise<{ text: string }> {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     const knowledge = await this.loadKnowledge();
     if (!apiKey || !knowledge) {
       return { text: FALLBACK_TEXT };

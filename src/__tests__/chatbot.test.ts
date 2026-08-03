@@ -21,6 +21,7 @@ describe('ChatbotService', () => {
     process.env.GEMINI_API_KEY = 'test-key';
     process.env.KNOWLEDGE_PATH = FIXTURE_PATH;
     delete process.env.GEMINI_MODEL;
+    delete process.env.GOOGLE_API_KEY;
     service.resetKnowledgeCache();
     fetchMock = jest.fn<typeof fetch>();
     global.fetch = fetchMock as unknown as typeof fetch;
@@ -83,6 +84,16 @@ describe('ChatbotService', () => {
     const result = await service.query('anything', []);
     expect(result.text).toContain('support@ecohavest.org');
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('accepts GOOGLE_API_KEY as an alternative key name', async () => {
+    delete process.env.GEMINI_API_KEY;
+    process.env.GOOGLE_API_KEY = 'google-key';
+    fetchMock.mockResolvedValue(geminiOk('works'));
+    const result = await service.query('hello', []);
+    expect(result.text).toBe('works');
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect((init.headers as Record<string, string>)['x-goog-api-key']).toBe('google-key');
   });
 
   it('falls back when the knowledge file cannot be read', async () => {
