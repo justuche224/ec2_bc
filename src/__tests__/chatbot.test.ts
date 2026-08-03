@@ -40,7 +40,7 @@ describe('ChatbotService', () => {
       { sender: 'bot', text: 'hello' },
     ]);
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toContain('gemini-2.5-flash-lite:generateContent');
+    expect(url).toContain('gemini-flash-lite-latest:generateContent');
     const body = JSON.parse(init.body as string);
     expect(body.systemInstruction.parts[0].text).toContain('EcoHarvest Test Knowledge');
     expect(body.contents).toEqual([

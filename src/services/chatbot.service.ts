@@ -58,7 +58,9 @@ ${knowledge}`;
       return { text: FALLBACK_TEXT };
     }
 
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+    // Rolling alias: always points at Google's newest flash-lite model.
+    // Pinned versions get retired for new API keys (gemini-2.5-flash-lite 404s).
+    const model = process.env.GEMINI_MODEL || "gemini-flash-lite-latest";
     const contents = [
       ...history.slice(-10).map((turn) => ({
         role: turn.sender === "user" ? "user" : "model",
