@@ -501,6 +501,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
     referralsReceived: many(referrals, { relationName: "referree" }),
     investments: many(investments),
     beneficiaries: many(beneficiaries),
+    academyPurchases: many(academyPurchases),
 }));
 export const productCategory = pgTable("product_category", {
     id: varchar("id", { length: 36 })
@@ -649,4 +650,62 @@ export const crowdfundingReferralsRelations = relations(crowdfundingReferrals, (
         fields: [crowdfundingReferrals.investmentId],
         references: [crowdfundingInvestments.id],
     }),
+}));
+// ==================== ACADEMY SYSTEM ====================
+export const academyItemTypeEnum = pgEnum("academy_item_type", ["BOOK", "COURSE"]);
+export const academyItems = pgTable("academy_items", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    type: academyItemTypeEnum("type").notNull(),
+    title: varchar("title", { length: 255 }).notNull(),
+    description: text("description").notNull(),
+    price: doublePrecision("price").notNull(),
+    coverImage: text("cover_image").notNull(),
+    deliveryLink: text("delivery_link").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+export const academyPurchases = pgTable("academy_purchases", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    itemId: varchar("item_id", { length: 36 })
+        .notNull()
+        .references(() => academyItems.id, { onDelete: "cascade" }),
+    amount: doublePrecision("amount").notNull(),
+    paymentProof: text("payment_proof").notNull(),
+    status: statusEnum("status").notNull().default("PENDING"),
+    rejectionReason: text("rejection_reason"),
+    approvedAt: timestamp("approved_at"),
+    rejectedAt: timestamp("rejected_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+export const academySettings = pgTable("academy_settings", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    bookWalletAddress: text("book_wallet_address"),
+    bookWalletNetwork: text("book_wallet_network"),
+    courseWalletAddress: text("course_wallet_address"),
+    courseWalletNetwork: text("course_wallet_network"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+export const academyPurchasesRelations = relations(academyPurchases, ({ one }) => ({
+    user: one(user, {
+        fields: [academyPurchases.userId],
+        references: [user.id],
+    }),
+    item: one(academyItems, {
+        fields: [academyPurchases.itemId],
+        references: [academyItems.id],
+    }),
+}));
+export const academyItemsRelations = relations(academyItems, ({ many }) => ({
+    purchases: many(academyPurchases),
 }));

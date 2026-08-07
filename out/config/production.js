@@ -35,6 +35,15 @@ export const productionConfig = {
         bankProofs: process.env.STORAGE_PATH
             ? join(process.env.STORAGE_PATH, "bank-proofs")
             : join(process.cwd(), "storage", "bank-proofs"),
+        academyImages: process.env.STORAGE_PATH
+            ? join(process.env.STORAGE_PATH, "academy-images")
+            : join(process.cwd(), "storage", "academy-images"),
+        academyFiles: process.env.STORAGE_PATH
+            ? join(process.env.STORAGE_PATH, "academy-files")
+            : join(process.cwd(), "storage", "academy-files"),
+        academyProofs: process.env.STORAGE_PATH
+            ? join(process.env.STORAGE_PATH, "academy-proofs")
+            : join(process.cwd(), "storage", "academy-proofs"),
     },
     upload: {
         maxFileSize: 5 * 1024 * 1024, // 5MB
