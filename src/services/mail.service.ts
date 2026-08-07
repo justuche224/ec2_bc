@@ -1237,6 +1237,48 @@ class MailService {
     const html = this.getBaseTemplate(content);
     return { text, html };
   }
+
+  /**
+   * Send Academy item delivery email
+   */
+  async sendAcademyItemDelivery(
+    email: string,
+    name: string,
+    itemName: string,
+    deliveryContent: string
+  ): Promise<void> {
+    const subject = `Your EcoHarvest Academy Purchase: ${itemName}`;
+    
+    const isUrl = deliveryContent.startsWith("http");
+    
+    const content = `
+    <div class="content">
+      <h2>Hello ${name},</h2>
+      <p>Thank you for purchasing <strong>${itemName}</strong> from the EcoHarvest Academy!</p>
+      
+      <p>Your payment has been successfully verified, and your content is now available.</p>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        ${
+          isUrl 
+          ? `<a href="${deliveryContent}" class="button">Access Your Content</a>`
+          : `<div class="info-box"><p><strong>Delivery Content:</strong><br/>${deliveryContent}</p></div>`
+        }
+      </div>
+      
+      <p>If you have any questions or need further assistance, please contact our support team at <a href="mailto:support@ecohavest.org">support@ecohavest.org</a></p>
+      <p>Happy Learning!</p>
+    </div>
+    `;
+
+    const html = this.getBaseTemplate(content);
+    await this.sendMail({
+      to: email,
+      subject,
+      text: `Your purchase of ${itemName} has been verified. Access it here: ${deliveryContent}`,
+      html,
+    });
+  }
 }
 
 // Export a singleton instance
