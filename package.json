@@ -17,12 +17,14 @@
   "dependencies": {
     "@hono/node-server": "^1.14.0",
     "@types/uuid": "^10.0.0",
+    "bcryptjs": "^3.0.3",
     "better-auth": "^1.2.5",
     "better-auth-harmony": "^1.2.4",
     "decimal.js": "^10.5.0",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.41.0",
     "hono": "^4.7.5",
+    "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.14.0",
     "nodemailer": "^6.10.0",
     "postgres": "^3.4.5",
@@ -31,7 +33,9 @@
     "zod": "^4.0.10"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@types/jest": "^29.5.14",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.19.41",
     "@types/nodemailer": "^6.4.23",
     "@types/supertest": "^6.0.3",

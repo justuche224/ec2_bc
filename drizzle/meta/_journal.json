@@ -127,6 +127,13 @@
       "when": 1786112921561,
       "tag": "0017_clumsy_frog_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1788251305868,
+      "tag": "0018_nosy_warbound",
+      "breakpoints": true
     }
   ]
 }

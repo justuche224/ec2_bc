@@ -6,6 +6,7 @@ import db from "../db/index.js";
 import { kyc, user } from "../db/schema.js";
 import { eq, and, or } from "drizzle-orm";
 import { config } from "../config/index.js";
+import { MarketerService } from "./marketer.service.js";
 export class KYCService {
     constructor() { }
     static getInstance() {
@@ -121,6 +122,12 @@ export class KYCService {
                 updatedAt: new Date(),
             })
                 .where(eq(user.id, kycRecord[0].userId));
+            try {
+                await MarketerService.activateReferral(kycRecord[0].userId);
+            }
+            catch (e) {
+                console.error("Failed to activate marketer referral:", e);
+            }
         }
         return { success: true, status };
     }

@@ -161,12 +161,13 @@ export class AcademyController {
       const itemId = formData.get("itemId") as string;
       const amount = parseFloat(formData.get("amount") as string);
       const proofFile = formData.get("proof") as File;
+      const marketerCode = formData.get("marketerCode") as string | undefined;
 
       if (!itemId || isNaN(amount) || !proofFile) {
         return c.json({ error: "Missing required fields" }, 400);
       }
 
-      const purchase = await academyService.submitPurchase(user.id, itemId, amount, proofFile);
+      const purchase = await academyService.submitPurchase(user.id, itemId, amount, proofFile, marketerCode);
       return c.json(purchase, 201);
     } catch (error) {
       return c.json({ error: error instanceof Error ? error.message : "Failed to submit purchase" }, 500);

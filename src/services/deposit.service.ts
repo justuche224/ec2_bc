@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
 import { join } from "path";
 import { readFile } from "fs/promises";
+import { MarketerService } from "./marketer.service.js";
 
 const balanceService = BalanceService.getInstance();
 
@@ -540,6 +541,12 @@ export class DepositService {
       });
     }
 
+    try {
+      await MarketerService.creditDepositCommission(depositId, depositRecord.userId, parseFloat(depositRecord.amount));
+    } catch (e) {
+      console.error("Failed to credit marketer commission:", e);
+    }
+
     return result;
   }
 
@@ -584,6 +591,12 @@ export class DepositService {
         method: "CASHAPP",
         date: new Date(),
       });
+    }
+
+    try {
+      await MarketerService.creditDepositCommission(depositId, depositRecord.userId, parseFloat(depositRecord.amount));
+    } catch (e) {
+      console.error("Failed to credit marketer commission:", e);
     }
 
     return result;
@@ -631,6 +644,12 @@ export class DepositService {
       });
     }
 
+    try {
+      await MarketerService.creditDepositCommission(depositId, depositRecord.userId, parseFloat(depositRecord.amount));
+    } catch (e) {
+      console.error("Failed to credit marketer commission:", e);
+    }
+
     return result;
   }
 
@@ -674,6 +693,12 @@ export class DepositService {
         method: "BANK TRANSFER",
         date: new Date(),
       });
+    }
+
+    try {
+      await MarketerService.creditDepositCommission(depositId, depositRecord.userId, parseFloat(depositRecord.amount));
+    } catch (e) {
+      console.error("Failed to credit marketer commission:", e);
     }
 
     return result;

@@ -709,3 +709,93 @@ export const academyPurchasesRelations = relations(academyPurchases, ({ one }) =
 export const academyItemsRelations = relations(academyItems, ({ many }) => ({
     purchases: many(academyPurchases),
 }));
+// ==================== MARKETER SYSTEM ====================
+export const marketerStatusEnum = pgEnum("marketer_status", [
+    "PENDING",
+    "ACTIVE",
+    "SUSPENDED",
+]);
+export const marketerCommissionSourceEnum = pgEnum("marketer_commission_source", [
+    "DEPOSIT",
+    "BOOK",
+    "COURSE",
+]);
+export const marketers = pgTable("marketers", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    name: text("name").notNull(),
+    email: text("email").notNull().unique(),
+    phone: text("phone").notNull(),
+    passwordHash: text("password_hash").notNull(),
+    bio: text("bio"),
+    socialLinks: text("social_links"), // JSON string
+    marketerCode: varchar("marketer_code", { length: 20 }).notNull().unique(),
+    status: marketerStatusEnum("status").notNull().default("PENDING"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+export const marketerReferrals = pgTable("marketer_referrals", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    marketerId: varchar("marketer_id", { length: 36 })
+        .notNull()
+        .references(() => marketers.id, { onDelete: "cascade" }),
+    userId: varchar("user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    isActive: boolean("is_active").notNull().default(false), // true when user completes KYC
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+export const marketerCommissions = pgTable("marketer_commissions", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    marketerId: varchar("marketer_id", { length: 36 })
+        .notNull()
+        .references(() => marketers.id, { onDelete: "cascade" }),
+    sourceType: marketerCommissionSourceEnum("source_type").notNull(),
+    sourceId: varchar("source_id", { length: 36 }).notNull(), // ID of deposit or purchase
+    userId: varchar("user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    amount: doublePrecision("amount").notNull(),
+    percentage: doublePrecision("percentage").notNull(),
+    status: statusEnum("status").notNull().default("PENDING"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+export const marketerSettings = pgTable("marketer_settings", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    depositCommissionPercent: doublePrecision("deposit_commission_percent").notNull().default(5),
+    bookCommissionPercent: doublePrecision("book_commission_percent").notNull().default(10),
+    courseCommissionPercent: doublePrecision("course_commission_percent").notNull().default(10),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+export const marketersRelations = relations(marketers, ({ many }) => ({
+    referrals: many(marketerReferrals),
+    commissions: many(marketerCommissions),
+}));
+export const marketerReferralsRelations = relations(marketerReferrals, ({ one }) => ({
+    marketer: one(marketers, {
+        fields: [marketerReferrals.marketerId],
+        references: [marketers.id],
+    }),
+    user: one(user, {
+        fields: [marketerReferrals.userId],
+        references: [user.id],
+    }),
+}));
+export const marketerCommissionsRelations = relations(marketerCommissions, ({ one }) => ({
+    marketer: one(marketers, {
+        fields: [marketerCommissions.marketerId],
+        references: [marketers.id],
+    }),
+    user: one(user, {
+        fields: [marketerCommissions.userId],
+        references: [user.id],
+    }),
+}));

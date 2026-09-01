@@ -21,6 +21,8 @@ import crowdfundingRouter from "./routes/crowdfunding.routes.js";
 import beneficiaryRouter from "./routes/beneficiary.routes.js";
 import chatbotRouter from "./routes/chatbot.routes.js";
 import academyRouter from "./routes/academy.routes.js";
+import marketerRouter from "./routes/marketer.routes.js";
+import marketerAdminRouter from "./routes/marketer-admin.routes.js";
 import { mailService } from "./services/mail.service.js";
 import db from "./db/index.js";
 import { sql } from "drizzle-orm";
@@ -45,6 +47,8 @@ app.route("/api/crowdfunding", crowdfundingRouter);
 app.route("/api/beneficiaries", beneficiaryRouter);
 app.route("/api/chatbot", chatbotRouter);
 app.route("/api/academy", academyRouter);
+app.route("/api/marketer", marketerRouter);
+app.route("/api/admin/marketers", marketerAdminRouter);
 // Auth routes
 app.on(["POST", "GET"], "/api/auth/*", (c) => {
     return auth.handler(c.req.raw);

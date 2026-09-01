@@ -6,6 +6,7 @@ import { join } from "path";
 import { writeFile, unlink } from "fs/promises";
 import sharp from "sharp";
 import { config } from "../config/index.js";
+import { MarketerService } from "./marketer.service.js";
 import { mailService } from "./mail.service.js";
 
 export class AcademyService {
@@ -183,7 +184,7 @@ export class AcademyService {
   }
 
   // --- PURCHASES ---
-  async submitPurchase(userId: string, itemId: string, amount: number, proofFile: File) {
+  async submitPurchase(userId: string, itemId: string, amount: number, proofFile: File, marketerCode?: string) {
     if (!proofFile.type.startsWith("image/")) {
       throw new Error("Proof must be an image");
     }
@@ -203,6 +204,25 @@ export class AcademyService {
       paymentProof: proofFilename,
       status: "PENDING",
     }).returning();
+
+    if (marketerCode) {
+      try {
+        const item = await db.query.academyItems.findFirst({
+          where: eq(academyItems.id, itemId),
+        });
+        if (item) {
+          await MarketerService.creditPurchaseCommission(
+            purchase[0].id,
+            userId,
+            amount,
+            item.type, // "BOOK" or "COURSE"
+            marketerCode
+          );
+        }
+      } catch (e) {
+        console.error("Failed to track marketer code for purchase:", e);
+      }
+    }
 
     return purchase[0];
   }
@@ -249,15 +269,24 @@ export class AcademyService {
     };
     if (status === "APPROVED") {
       updateData.approvedAt = new Date();
-    } else {
-      updateData.rejectedAt = new Date();
+    } else if (status === "REJECTED") {
       updateData.rejectionReason = reason;
+      updateData.rejectedAt = new Date();
     }
 
     const updated = await db.update(academyPurchases).set(updateData).where(eq(academyPurchases.id, id)).returning();
 
     if (status === "APPROVED") {
-      // Send email
+      try {
+        await MarketerService.approveCommissionForSource(id);
+      } catch (e) {
+        console.error("Failed to approve marketer commission:", e);
+      }
+    }
+
+    // TODO: Send email notification to user about purchase status
+
+    if (status === "APPROVED") {
       const u = await db.select().from(user).where(eq(user.id, updated[0].userId)).limit(1);
       const i = await db.select().from(academyItems).where(eq(academyItems.id, updated[0].itemId)).limit(1);
       
