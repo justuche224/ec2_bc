@@ -19,9 +19,6 @@ export const requireMarketer = async (c, next) => {
         if (!marketerRecord) {
             return c.json({ error: "Unauthorized: Marketer not found" }, 401);
         }
-        if (marketerRecord.status === "PENDING") {
-            return c.json({ error: "Forbidden: Marketer account is pending approval" }, 403);
-        }
         if (marketerRecord.status === "SUSPENDED") {
             return c.json({ error: "Forbidden: Marketer account is suspended" }, 403);
         }
