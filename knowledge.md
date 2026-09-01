@@ -56,7 +56,7 @@ EcoHarvest is described as a regenerative finance ecosystem connecting agricultu
 
 ## 3. ICO and launch messaging
 
-- **ICO launch moment:** SEPTEMBER, 1, 2026 at 04:00 UTC (as promoted on the site).
+- **ICO launch moment:** OCTOBER 1, 2026 at 04:00 UTC (as promoted on the site).
 - **Hero themes on the homepage:** ICO date; agriculture + energy + investment; cross-border scale and utility beyond speculation.
 
 **Strategic note:** The ICO is fundraising, not the end state; long-term value depends on execution after the sale. Credible whitepaper and tokenomics, visible team, working product, and community matter before the project is fully investor-grade.
