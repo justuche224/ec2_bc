@@ -555,7 +555,9 @@ export const productCategory = pgTable("product_category", {
   id: varchar("id", { length: 36 })
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
+  code: varchar("code", { length: 50 }),
   name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
 });
@@ -565,8 +567,26 @@ export const product = pgTable("product", {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: varchar("name", { length: 255 }).notNull(),
-  img: text("img").notNull(),
+  make: varchar("make", { length: 100 }),
+  model: varchar("model", { length: 100 }),
+  year: integer("year"),
+  condition: varchar("condition", { length: 50 }).default("BRAND_NEW").notNull(),
+  transactionType: varchar("transaction_type", { length: 50 }).default("BUY").notNull(),
+  availability: varchar("availability", { length: 50 }).default("IN_STOCK").notNull(),
   price: varchar("price", { length: 255 }).notNull(),
+  operatingHours: integer("operating_hours"),
+  engineHp: integer("engine_hp"),
+  locationCountry: varchar("location_country", { length: 100 }),
+  locationCity: varchar("location_city", { length: 100 }),
+  sellerVerification: varchar("seller_verification", { length: 50 }).default("VERIFIED_DEALER").notNull(),
+  inspection: varchar("inspection", { length: 50 }).default("NOT_INSPECTED").notNull(),
+  warranty: varchar("warranty", { length: 100 }).default("NONE").notNull(),
+  delivery: varchar("delivery", { length: 100 }).default("BUYER_PICKUP").notNull(),
+  inspectionReportUrl: text("inspection_report_url"),
+  specifications: text("specifications"),
+  status: varchar("status", { length: 50 }).default("ACTIVE").notNull(),
+  featured: boolean("featured").default(false).notNull(),
+  img: text("img").notNull(),
   description: text("description").notNull(),
   categoryId: varchar("category_id", { length: 36 })
     .notNull()

@@ -7,13 +7,13 @@ export class ProductController {
   // Category controllers
   static async createCategory(c: Context) {
     try {
-      const { name } = await c.req.json();
+      const { name, code, description } = await c.req.json();
 
       if (!name || typeof name !== "string") {
         return c.json({ error: "Name is required and must be a string" }, 400);
       }
 
-      const result = await productService.createCategory(name);
+      const result = await productService.createCategory(name, code, description);
       return c.json(result, 201);
     } catch (error) {
       console.error("Error creating category:", error);
@@ -29,13 +29,13 @@ export class ProductController {
   static async updateCategory(c: Context) {
     try {
       const categoryId = c.req.param("id");
-      const { name } = await c.req.json();
+      const { name, code, description } = await c.req.json();
 
       if (!name || typeof name !== "string") {
         return c.json({ error: "Name is required and must be a string" }, 400);
       }
 
-      const result = await productService.updateCategory(categoryId, name);
+      const result = await productService.updateCategory(categoryId, name, code, description);
       return c.json(result, 200);
     } catch (error) {
       console.error("Error updating category:", error);
@@ -78,11 +78,41 @@ export class ProductController {
       return c.json({
         data: categoriesWithProducts.map(category => ({
           id: category.id,
+          code: category.code,
           name: category.name,
+          description: category.description,
           createdAt: category.createdAt,
           updatedAt: category.updatedAt,
           productsCount: category.products.length,
-          products: category.products,
+          products: category.products.map(product => ({
+            id: product.id,
+            name: product.name,
+            make: product.make,
+            model: product.model,
+            year: product.year,
+            condition: product.condition,
+            transactionType: product.transactionType,
+            availability: product.availability,
+            price: product.price,
+            operatingHours: product.operatingHours,
+            engineHp: product.engineHp,
+            locationCountry: product.locationCountry,
+            locationCity: product.locationCity,
+            sellerVerification: product.sellerVerification,
+            inspection: product.inspection,
+            warranty: product.warranty,
+            delivery: product.delivery,
+            inspectionReportUrl: product.inspectionReportUrl,
+            specifications: product.specifications,
+            featured: product.featured,
+            status: product.status,
+            img: product.img,
+            imageUrl: product.imageUrl,
+            description: product.description,
+            categoryId: product.categoryId,
+            createdAt: product.createdAt,
+            updatedAt: product.updatedAt,
+          })),
         })),
       }, 200);
     } catch (error) {
@@ -100,13 +130,44 @@ export class ProductController {
     try {
       const categoryId = c.req.param("id");
       const categoryWithProducts = await productService.getCategory(categoryId);
+
       return c.json({
         id: categoryWithProducts.id,
+        code: categoryWithProducts.code,
         name: categoryWithProducts.name,
+        description: categoryWithProducts.description,
         createdAt: categoryWithProducts.createdAt,
         updatedAt: categoryWithProducts.updatedAt,
         productsCount: categoryWithProducts.products.length,
-        products: categoryWithProducts.products,
+        products: categoryWithProducts.products.map(product => ({
+          id: product.id,
+          name: product.name,
+          make: product.make,
+          model: product.model,
+          year: product.year,
+          condition: product.condition,
+          transactionType: product.transactionType,
+          availability: product.availability,
+          price: product.price,
+          operatingHours: product.operatingHours,
+          engineHp: product.engineHp,
+          locationCountry: product.locationCountry,
+          locationCity: product.locationCity,
+          sellerVerification: product.sellerVerification,
+          inspection: product.inspection,
+          warranty: product.warranty,
+          delivery: product.delivery,
+          inspectionReportUrl: product.inspectionReportUrl,
+          specifications: product.specifications,
+          featured: product.featured,
+          status: product.status,
+          img: product.img,
+          imageUrl: product.imageUrl,
+          description: product.description,
+          categoryId: product.categoryId,
+          createdAt: product.createdAt,
+          updatedAt: product.updatedAt,
+        })),
       }, 200);
     } catch (error) {
       console.error("Error getting category:", error);
@@ -127,21 +188,61 @@ export class ProductController {
       const price = formData.get("price") as string;
       const description = formData.get("description") as string;
       const categoryId = formData.get("categoryId") as string;
-      const imageFile = formData.get("image") as File;
+      const imageFile = formData.get("image") as File | null;
+      const imageUrl = (formData.get("imageUrl") as string) || (formData.get("img") as string) || null;
 
-      if (!name || !price || !description || !categoryId || !imageFile) {
+      if (!name || !price || !description || !categoryId) {
         return c.json(
-          { error: "All fields (name, price, description, categoryId, image) are required" },
+          { error: "name, price, description, and categoryId are required" },
           400
         );
       }
+
+      const make = (formData.get("make") as string) || null;
+      const model = (formData.get("model") as string) || null;
+      const yearStr = formData.get("year");
+      const year = yearStr ? Number(yearStr) : null;
+      const condition = (formData.get("condition") as string) || "BRAND_NEW";
+      const transactionType = (formData.get("transactionType") as string) || "BUY";
+      const availability = (formData.get("availability") as string) || "IN_STOCK";
+      const operatingHoursStr = formData.get("operatingHours");
+      const operatingHours = operatingHoursStr ? Number(operatingHoursStr) : null;
+      const engineHpStr = formData.get("engineHp");
+      const engineHp = engineHpStr ? Number(engineHpStr) : null;
+      const locationCountry = (formData.get("locationCountry") as string) || null;
+      const locationCity = (formData.get("locationCity") as string) || null;
+      const sellerVerification = (formData.get("sellerVerification") as string) || "VERIFIED_DEALER";
+      const inspection = (formData.get("inspection") as string) || "NOT_INSPECTED";
+      const warranty = (formData.get("warranty") as string) || "NONE";
+      const delivery = (formData.get("delivery") as string) || "BUYER_PICKUP";
+      const inspectionReportUrl = (formData.get("inspectionReportUrl") as string) || null;
+      const specifications = (formData.get("specifications") as string) || null;
+      const featured = formData.get("featured") === "true";
 
       const result = await productService.createProduct({
         name,
         price,
         description,
         categoryId,
-        imageFile,
+        imageFile: imageFile && imageFile.size > 0 ? imageFile : null,
+        imageUrl,
+        make,
+        model,
+        year,
+        condition,
+        transactionType,
+        availability,
+        operatingHours,
+        engineHp,
+        locationCountry,
+        locationCity,
+        sellerVerification,
+        inspection,
+        warranty,
+        delivery,
+        inspectionReportUrl,
+        specifications,
+        featured,
       });
 
       return c.json(result, 201);
@@ -160,23 +261,32 @@ export class ProductController {
     try {
       const productId = c.req.param("id");
       const formData = await c.req.formData();
-      
       const updateData: any = {};
-      
-      const name = formData.get("name");
-      if (name) updateData.name = name as string;
-      
-      const price = formData.get("price");
-      if (price) updateData.price = price as string;
-      
-      const description = formData.get("description");
-      if (description) updateData.description = description as string;
-      
-      const categoryId = formData.get("categoryId");
-      if (categoryId) updateData.categoryId = categoryId as string;
-      
-      const imageFile = formData.get("image");
-      if (imageFile) updateData.imageFile = imageFile as File;
+
+      const stringFields = [
+        "name", "price", "description", "categoryId", "imageUrl",
+        "make", "model", "condition", "transactionType", "availability",
+        "locationCountry", "locationCity", "sellerVerification",
+        "inspection", "warranty", "delivery", "inspectionReportUrl",
+        "specifications", "status"
+      ];
+
+      for (const field of stringFields) {
+        const val = formData.get(field);
+        if (val !== null && val !== undefined) {
+          updateData[field] = val as string;
+        }
+      }
+
+      if (formData.get("year")) updateData.year = Number(formData.get("year"));
+      if (formData.get("operatingHours")) updateData.operatingHours = Number(formData.get("operatingHours"));
+      if (formData.get("engineHp")) updateData.engineHp = Number(formData.get("engineHp"));
+      if (formData.get("featured") !== null) updateData.featured = formData.get("featured") === "true";
+
+      const imageFile = formData.get("image") as File | null;
+      if (imageFile && imageFile.size > 0) {
+        updateData.imageFile = imageFile;
+      }
 
       if (Object.keys(updateData).length === 0) {
         return c.json({ error: "No fields to update" }, 400);
@@ -254,19 +364,28 @@ export class ProductController {
     try {
       const filename = c.req.param("filename");
       const imageBuffer = await productService.getProductImage(filename);
-      
-      return new Response(imageBuffer, {
-        status: 200,
-        headers: {
-          "Content-Type": "image/jpeg",
-        },
+      return c.body(imageBuffer, 200, {
+        "Content-Type": "image/jpeg",
+        "Cache-Control": "public, max-age=31536000",
       });
     } catch (error) {
       console.error("Error getting product image:", error);
-      return new Response(
-        error instanceof Error ? error.message : "Image not found",
-        { status: 404 }
+      return c.json({ error: "Image not found" }, 404);
+    }
+  }
+
+  static async getProductStats(c: Context) {
+    try {
+      const stats = await productService.getProductStats();
+      return c.json(stats, 200);
+    } catch (error) {
+      console.error("Error getting product stats:", error);
+      return c.json(
+        {
+          error: error instanceof Error ? error.message : "Failed to get product stats",
+        },
+        500
       );
     }
   }
-} 
+}

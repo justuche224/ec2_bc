@@ -184,3 +184,40 @@ Exact behavior, currencies, and limits are defined in the live app and admin con
 ---
 
 *For internal RAG / FAQ use. Update when [https://ecohavest.org](https://ecohavest.org) copy, routes, or policies change.*
+
+
+---
+
+## 11. EcoHarvest EC2 — Agricultural Machinery, Equipment & Technology
+
+The EcoHarvest EC2 Marketplace (https://ecohavest.org/marketplace) is a dedicated catalogue for new, certified pre-owned, and refurbished agricultural heavy equipment, agro-processing machinery, and smart farming technology.
+
+**The 15 Standard EC2 Categories:**
+1. **EC2.1 — Tractors & Farm Vehicles:** New/used row-crop, compact, articulated, crawler, orchard tractors and attachments.
+2. **EC2.2 — Harvesting Machinery:** Combine harvesters, rice/maize/sugarcane harvesters, reapers and threshers.
+3. **EC2.3 — Land Clearing & Earthmoving Equipment:** Bulldozers, excavators, brush cutters, forestry mulchers, and agricultural shredders for clearing dense vegetation and land preparation.
+4. **EC2.4 — Soil Preparation & Planting:** Ploughs, disc harrows, cultivators, rotavators, seed drills, precision planters.
+5. **EC2.5 — Irrigation, Water & Drainage:** Solar borehole pumps, drip irrigation kits, sprinklers, center pivots, fertigation systems.
+6. **EC2.6 — Crop Care & Fertilizer Application:** Boom sprayers, knapsack sprayers, mist blowers, fertilizer and manure spreaders.
+7. **EC2.7 — Post-Harvest & Grain Handling:** Grain dryers, maize shellers, cleaners, elevators, silos, hermetic storage.
+8. **EC2.8 — Agricultural Processing & Manufacturing:** Palm fruit sterilizers, palm oil presses, cassava graters, garri fryers, rice and flour mills, cocoa processing.
+9. **EC2.9 — Livestock & Dairy Equipment:** Milking machines, chillers, feed mixers, poultry feeders, incubators, livestock scales.
+10. **EC2.10 — Farm Transport & Logistics:** Farm trailers, tractor trolleys, refrigerated trucks, telehandlers, harvest conveyors.
+11. **EC2.11 — Smart Farming & Precision Agriculture:** Agricultural drones, GPS guidance, auto-steering, soil sensors, weather stations.
+12. **EC2.12 — Farm Power & Energy Systems:** Solar power systems, diesel/gas generators, power tiller engines, biogas systems.
+13. **EC2.13 — Spare Parts, Tools & Maintenance:** Tractor tires, tracks, hydraulic pumps, hoses, filters, belts, cutting blades, diagnostic tools.
+14. **EC2.14 — Greenhouse, Nursery & Controlled Farming:** Greenhouse structures, hydroponics, climate controllers, grow lights.
+15. **EC2.15 — Used, Refurbished & Reconditioned Machinery:** Inspected second-hand tractors, refurbished processing lines, certified pre-owned equipment.
+
+**Purchasing Options & Verification:**
+- Acquisition modes: Direct purchase (Buy), Lease to Own / equipment financing, Rental, and Hire with Operator.
+- Conditions: Brand New, Used, Certified Refurbished, Reconditioned, Parts Only.
+- Verification: Only verified dealers, manufacturers, and authorized distributors can post verified listings. Used machinery includes operating hours, year of manufacture, service history, and independent inspection reports.
+
+**EC2 AI Agricultural Agent:**
+An automated advisory service guiding farmers and equipment buyers step by step:
+1. Identify the task (clearing, ploughing, planting, harvesting, processing, irrigation).
+2. Understand farm scale (hectares, terrain slope, soil type, crop).
+3. Set the budget and acquisition method (buy, lease, rent).
+4. Recommend equipment capacity and horsepower (HP) matching implement draft requirements.
+5. Provide pre-purchase checklists, inspection questions, and operator safety manuals.
