@@ -16,6 +16,20 @@ function resolveImageUrl(img?: string | null): string {
   return `${base}/api/products/image/${img}`;
 }
 
+function mapProductRecord(p: any) {
+  return {
+    ...p,
+    condition: p.condition || "BRAND_NEW",
+    transactionType: p.transactionType || "BUY",
+    availability: p.availability || "IN_STOCK",
+    sellerVerification: p.sellerVerification || "VERIFIED_DEALER",
+    inspection: p.inspection || "NOT_INSPECTED",
+    warranty: p.warranty || "NONE",
+    delivery: p.delivery || "BUYER_PICKUP",
+    imageUrl: resolveImageUrl(p.img),
+  };
+}
+
 export interface CreateProductInput {
   name: string;
   price: string;
@@ -117,10 +131,7 @@ export class ProductService {
 
         return {
           ...category,
-          products: products.map((p) => ({
-            ...p,
-            imageUrl: resolveImageUrl(p.img),
-          })),
+          products: products.map(mapProductRecord),
         };
       })
     );
@@ -146,10 +157,7 @@ export class ProductService {
 
     return {
       ...category[0],
-      products: products.map((p) => ({
-        ...p,
-        imageUrl: resolveImageUrl(p.img),
-      })),
+      products: products.map(mapProductRecord),
     };
   }
 
@@ -344,10 +352,7 @@ export class ProductService {
       .from(product)
       .orderBy(product.createdAt);
 
-    return products.map((p) => ({
-      ...p,
-      imageUrl: resolveImageUrl(p.img),
-    }));
+    return products.map(mapProductRecord);
   }
 
   async getProduct(productId: string) {
@@ -361,10 +366,7 @@ export class ProductService {
       throw new Error("Product not found");
     }
 
-    return {
-      ...productRecord[0],
-      imageUrl: resolveImageUrl(productRecord[0].img),
-    };
+    return mapProductRecord(productRecord[0]);
   }
 
   async getProductImage(filename: string) {
