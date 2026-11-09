@@ -916,3 +916,37 @@ export const marketerCommissionsRelations = relations(marketerCommissions, ({ on
   }),
 }));
 
+export const nowpaymentsTransaction = pgTable("nowpayments_transaction", {
+  id: varchar("id", { length: 36 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  paymentId: varchar("payment_id", { length: 100 }).notNull().unique(),
+  paymentStatus: varchar("payment_status", { length: 50 }).notNull().default("waiting"),
+  payAddress: text("pay_address").notNull(),
+  priceAmount: doublePrecision("price_amount").notNull(),
+  priceCurrency: varchar("price_currency", { length: 10 }).notNull().default("usd"),
+  payAmount: doublePrecision("pay_amount").notNull(),
+  actuallyPaid: doublePrecision("actually_paid").default(0),
+  payCurrency: varchar("pay_currency", { length: 20 }).notNull(),
+  orderId: varchar("order_id", { length: 100 }),
+  orderDescription: text("order_description"),
+  ipnCallbackUrl: text("ipn_callback_url"),
+  credited: boolean("credited").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const nowpaymentsTransactionRelations = relations(
+  nowpaymentsTransaction,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [nowpaymentsTransaction.userId],
+      references: [user.id],
+    }),
+  })
+);
+
+
