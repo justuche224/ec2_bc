@@ -24,6 +24,8 @@ import academyRouter from "./routes/academy.routes.js";
 import marketerRouter from "./routes/marketer.routes.js";
 import marketerAdminRouter from "./routes/marketer-admin.routes.js";
 import nowPaymentsRouter from "./routes/nowpayments.routes.js";
+import airdropRouter from "./routes/airdrop.routes.js";
+import icoRouter from "./routes/ico.routes.js";
 import { mailService } from "./services/mail.service.js";
 import db from "./db/index.js";
 import { sql } from "drizzle-orm";
@@ -59,6 +61,8 @@ app.route("/api/chatbot", chatbotRouter);
 app.route("/api/academy", academyRouter);
 app.route("/api/marketer", marketerRouter);
 app.route("/api/admin/marketers", marketerAdminRouter);
+app.route("/api/airdrop", airdropRouter);
+app.route("/api/ico", icoRouter);
 
 // Auth routes
 app.on(["POST", "GET"], "/api/auth/*", (c) => {

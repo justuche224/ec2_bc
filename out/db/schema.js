@@ -847,3 +847,119 @@ export const nowpaymentsTransactionRelations = relations(nowpaymentsTransaction,
         references: [user.id],
     }),
 }));
+// ==================== AIRDROP & TASK-TO-EARN SYSTEM ====================
+export const airdropTasks = pgTable("airdrop_tasks", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    category: varchar("category", { length: 50 }).notNull().default("SOCIAL"), // SOCIAL, PLATFORM, DAILY, REFERRAL
+    reward: integer("reward").notNull().default(100), // in $tECO
+    actionUrl: text("action_url"),
+    actionLabel: text("action_label").default("Start Task"),
+    taskType: varchar("task_type", { length: 50 }).notNull().default("ONCE"), // ONCE, DAILY, RECURRING
+    isActive: boolean("is_active").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+export const airdropUserProfile = pgTable("airdrop_user_profile", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+        .notNull()
+        .unique()
+        .references(() => user.id, { onDelete: "cascade" }),
+    testTokenBalance: integer("test_token_balance").notNull().default(0),
+    xrplWalletAddress: text("xrpl_wallet_address"),
+    xrplDestinationTag: text("xrpl_destination_tag"),
+    currentStreak: integer("current_streak").notNull().default(0),
+    lastCheckinAt: timestamp("last_checkin_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+export const userAirdropCompletions = pgTable("user_airdrop_completions", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    taskId: varchar("task_id", { length: 36 })
+        .notNull()
+        .references(() => airdropTasks.id, { onDelete: "cascade" }),
+    status: varchar("status", { length: 50 }).notNull().default("COMPLETED"), // PENDING, COMPLETED
+    rewardPaid: integer("reward_paid").notNull(),
+    metadata: text("metadata"), // e.g. twitter handle, referral code, notes
+    completedAt: timestamp("completed_at").defaultNow().notNull(),
+});
+export const airdropTasksRelations = relations(airdropTasks, ({ many }) => ({
+    completions: many(userAirdropCompletions),
+}));
+export const userAirdropCompletionsRelations = relations(userAirdropCompletions, ({ one }) => ({
+    user: one(user, {
+        fields: [userAirdropCompletions.userId],
+        references: [user.id],
+    }),
+    task: one(airdropTasks, {
+        fields: [userAirdropCompletions.taskId],
+        references: [airdropTasks.id],
+    }),
+}));
+export const airdropUserProfileRelations = relations(airdropUserProfile, ({ one }) => ({
+    user: one(user, {
+        fields: [airdropUserProfile.userId],
+        references: [user.id],
+    }),
+}));
+// ==================== ICO (TOKEN PRESALE) SYSTEM ====================
+export const icoRounds = pgTable("ico_rounds", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    name: varchar("name", { length: 100 }).notNull(), // e.g. "Stage 1 - Early Bird"
+    stageNumber: integer("stage_number").notNull().default(1),
+    priceUsd: doublePrecision("price_usd").notNull().default(0.05), // $0.05 per ECO
+    totalTokens: doublePrecision("total_tokens").notNull().default(15000000), // 15,000,000 ECO
+    soldTokens: doublePrecision("sold_tokens").notNull().default(0),
+    minPurchaseUsd: doublePrecision("min_purchase_usd").notNull().default(20),
+    maxPurchaseUsd: doublePrecision("max_purchase_usd").notNull().default(50000),
+    status: varchar("status", { length: 50 }).notNull().default("ACTIVE"), // UPCOMING, ACTIVE, COMPLETED
+    startDate: timestamp("start_date").defaultNow().notNull(),
+    endDate: timestamp("end_date"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+export const icoPurchases = pgTable("ico_purchases", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    roundId: varchar("round_id", { length: 36 })
+        .notNull()
+        .references(() => icoRounds.id, { onDelete: "cascade" }),
+    tokensAllocated: doublePrecision("tokens_allocated").notNull(),
+    currencyPaid: varchar("currency_paid", { length: 20 }).notNull(), // USDT, XRP, BTC, etc.
+    amountPaid: doublePrecision("amount_paid").notNull(),
+    usdValue: doublePrecision("usd_value").notNull(),
+    xrplWalletAddress: text("xrpl_wallet_address"),
+    status: varchar("status", { length: 50 }).notNull().default("CONFIRMED"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export const icoRoundsRelations = relations(icoRounds, ({ many }) => ({
+    purchases: many(icoPurchases),
+}));
+export const icoPurchasesRelations = relations(icoPurchases, ({ one }) => ({
+    user: one(user, {
+        fields: [icoPurchases.userId],
+        references: [user.id],
+    }),
+    round: one(icoRounds, {
+        fields: [icoPurchases.roundId],
+        references: [icoRounds.id],
+    }),
+}));
