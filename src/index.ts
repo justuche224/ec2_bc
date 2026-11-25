@@ -65,7 +65,7 @@ app.route("/api/airdrop", airdropRouter);
 app.route("/api/ico", icoRouter);
 
 // Auth routes
-app.on(["POST", "GET"], "/api/auth/*", (c) => {
+app.on(["POST", "GET", "HEAD"], "/api/auth/*", (c) => {
   return auth.handler(c.req.raw);
 });
 

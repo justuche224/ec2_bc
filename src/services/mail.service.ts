@@ -19,14 +19,18 @@ class MailService {
    * Initialize the nodemailer transporter
    */
   private initializeTransporter() {
+    const port = Number(process.env.MAILER_PORT) || 587;
+    const isSecure = port === 465;
+
     this.transporter = nodemailer.createTransport({
       host: process.env.MAILER_HOST,
-      port: Number(process.env.MAILER_PORT) || 465,
-      secure: true,
+      port,
+      secure: isSecure,
       auth: {
         user: process.env.MAILER_EMAIL,
         pass: process.env.MAILER_PASSWORD,
       },
+      requireTLS: !isSecure,
       logger: process.env.NODE_ENV !== "production",
       debug: process.env.NODE_ENV !== "production",
     });
