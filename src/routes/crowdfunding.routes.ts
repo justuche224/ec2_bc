@@ -68,4 +68,13 @@ crowdfundingRouter.put(
 // Stats route
 crowdfundingRouter.get("/stats", CrowdfundingController.getSystemStats);
 
+// Star Achievement & Team Network routes
+crowdfundingRouter.get("/overview", CrowdfundingController.getOverview);
+crowdfundingRouter.get("/team-tree", CrowdfundingController.getTeamTree);
+crowdfundingRouter.get("/cycle-history", CrowdfundingController.getCycleHistory);
+crowdfundingRouter.get("/ledger", CrowdfundingController.getLedger);
+crowdfundingRouter.get("/certificates", CrowdfundingController.getCertificates);
+crowdfundingRouter.get("/leaderboard", CrowdfundingController.getLeaderboard);
+crowdfundingRouter.get("/global-pool", CrowdfundingController.getGlobalPool);
+
 export default crowdfundingRouter;

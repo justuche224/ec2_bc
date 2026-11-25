@@ -1,12 +1,14 @@
 import { NowPaymentsService } from "../services/nowpayments.service.js";
 import { BalanceService } from "../services/balance.service.js";
 import { mailService } from "../services/mail.service.js";
+import { CrowdfundingService } from "../services/crowdfunding.service.js";
 import db from "../db/index.js";
 import { nowpaymentsTransaction, user } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
 const nowPaymentsService = NowPaymentsService.getInstance();
 const balanceService = BalanceService.getInstance();
+const crowdfundingService = CrowdfundingService.getInstance();
 export class NowPaymentsController {
     // Get supported currencies with popular currencies prioritized
     static async getCurrencies(c) {
@@ -264,6 +266,13 @@ export class NowPaymentsController {
                     method: "CRYPTO",
                     date: new Date(),
                 });
+            }
+            // Check crowdfunding qualifying deposit (>= $99)
+            try {
+                await crowdfundingService.processQualifyingDeposit(trx.userId, trx.id, Number(trx.priceAmount || 0));
+            }
+            catch (e) {
+                console.error("Failed to process crowdfunding qualifying deposit for NOWPayments:", e);
             }
         }
         catch (err) {

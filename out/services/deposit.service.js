@@ -9,6 +9,7 @@ import sharp from "sharp";
 import { join } from "path";
 import { readFile } from "fs/promises";
 import { MarketerService } from "./marketer.service.js";
+import { CrowdfundingService } from "./crowdfunding.service.js";
 const balanceService = BalanceService.getInstance();
 export class DepositService {
     constructor() { }
@@ -440,6 +441,12 @@ export class DepositService {
         catch (e) {
             console.error("Failed to credit marketer commission:", e);
         }
+        try {
+            await CrowdfundingService.getInstance().processQualifyingDeposit(depositRecord.userId, depositId, parseFloat(depositRecord.amount));
+        }
+        catch (e) {
+            console.error("Failed to process crowdfunding qualifying deposit:", e);
+        }
         return result;
     }
     async approveCashappDeposit(depositId) {
@@ -478,6 +485,12 @@ export class DepositService {
         }
         catch (e) {
             console.error("Failed to credit marketer commission:", e);
+        }
+        try {
+            await CrowdfundingService.getInstance().processQualifyingDeposit(depositRecord.userId, depositId, parseFloat(depositRecord.amount));
+        }
+        catch (e) {
+            console.error("Failed to process crowdfunding qualifying deposit:", e);
         }
         return result;
     }
@@ -518,6 +531,12 @@ export class DepositService {
         catch (e) {
             console.error("Failed to credit marketer commission:", e);
         }
+        try {
+            await CrowdfundingService.getInstance().processQualifyingDeposit(depositRecord.userId, depositId, parseFloat(depositRecord.amount));
+        }
+        catch (e) {
+            console.error("Failed to process crowdfunding qualifying deposit:", e);
+        }
         return result;
     }
     async approveBankDeposit(depositId) {
@@ -556,6 +575,12 @@ export class DepositService {
         }
         catch (e) {
             console.error("Failed to credit marketer commission:", e);
+        }
+        try {
+            await CrowdfundingService.getInstance().processQualifyingDeposit(depositRecord.userId, depositId, parseFloat(depositRecord.amount));
+        }
+        catch (e) {
+            console.error("Failed to process crowdfunding qualifying deposit:", e);
         }
         return result;
     }

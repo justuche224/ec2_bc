@@ -582,6 +582,14 @@ export const crowdfundingSettings = pgTable("crowdfunding_settings", {
     referralBonusPercent: doublePrecision("referral_bonus_percent")
         .notNull()
         .default(5),
+    qualifyingDepositAmount: doublePrecision("qualifying_deposit_amount")
+        .notNull()
+        .default(99),
+    maxTeamDepth: integer("max_team_depth").notNull().default(3),
+    cycleRequirement: integer("cycle_requirement").notNull().default(12),
+    level1Points: integer("level1_points").notNull().default(10),
+    level2Points: integer("level2_points").notNull().default(100),
+    level3Points: integer("level3_points").notNull().default(1000),
     isActive: boolean("is_active").notNull().default(true),
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
@@ -669,6 +677,101 @@ export const crowdfundingReferralsRelations = relations(crowdfundingReferrals, (
     investment: one(crowdfundingInvestments, {
         fields: [crowdfundingReferrals.investmentId],
         references: [crowdfundingInvestments.id],
+    }),
+}));
+// Crowdfunding user achievement state
+export const crowdfundingUserAchievements = pgTable("crowdfunding_user_achievements", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" })
+        .unique(),
+    totalPoints: integer("total_points").notNull().default(0),
+    directParticipants: integer("direct_participants").notNull().default(0),
+    indirectParticipants: integer("indirect_participants").notNull().default(0),
+    completedCycles: integer("completed_cycles").notNull().default(0),
+    cycleRemainder: integer("cycle_remainder").notNull().default(0),
+    starsEarned: integer("stars_earned").notNull().default(0),
+    level1AchievedAt: timestamp("level1_achieved_at"),
+    level2AchievedAt: timestamp("level2_achieved_at"),
+    level3AchievedAt: timestamp("level3_achieved_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+// Crowdfunding ledger for points & fraud-proof audit
+export const crowdfundingLedger = pgTable("crowdfunding_ledger", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    sourceUserId: varchar("source_user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    tier: integer("tier").notNull(), // 1 = direct, 2 = 2nd tier, 3 = 3rd tier
+    eventType: varchar("event_type", { length: 50 }).notNull(), // "QUALIFYING_DEPOSIT", "REVERSAL", "ADMIN_ADJUSTMENT"
+    pointsDelta: integer("points_delta").notNull().default(1),
+    depositId: varchar("deposit_id", { length: 36 }),
+    depositAmount: doublePrecision("deposit_amount"),
+    note: text("note"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+// Crowdfunding cycle completion history
+export const crowdfundingCycleHistory = pgTable("crowdfunding_cycle_history", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    cycleNumber: integer("cycle_number").notNull(),
+    starsAwarded: integer("stars_awarded").notNull().default(1),
+    participantsCount: integer("participants_count").notNull().default(12),
+    completedAt: timestamp("completed_at").notNull().defaultNow(),
+});
+// Crowdfunding achievement certificates
+export const crowdfundingCertificates = pgTable("crowdfunding_certificates", {
+    id: varchar("id", { length: 36 })
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    userId: varchar("user_id", { length: 36 })
+        .notNull()
+        .references(() => user.id, { onDelete: "cascade" }),
+    certificateCode: varchar("certificate_code", { length: 64 }).notNull().unique(),
+    level: integer("level").notNull(), // 1, 2, 3
+    title: varchar("title", { length: 255 }).notNull(),
+    pointsThreshold: integer("points_threshold").notNull(),
+    issuedAt: timestamp("issued_at").notNull().defaultNow(),
+});
+export const crowdfundingUserAchievementsRelations = relations(crowdfundingUserAchievements, ({ one }) => ({
+    user: one(user, {
+        fields: [crowdfundingUserAchievements.userId],
+        references: [user.id],
+    }),
+}));
+export const crowdfundingLedgerRelations = relations(crowdfundingLedger, ({ one }) => ({
+    user: one(user, {
+        fields: [crowdfundingLedger.userId],
+        references: [user.id],
+    }),
+    sourceUser: one(user, {
+        fields: [crowdfundingLedger.sourceUserId],
+        references: [user.id],
+    }),
+}));
+export const crowdfundingCycleHistoryRelations = relations(crowdfundingCycleHistory, ({ one }) => ({
+    user: one(user, {
+        fields: [crowdfundingCycleHistory.userId],
+        references: [user.id],
+    }),
+}));
+export const crowdfundingCertificatesRelations = relations(crowdfundingCertificates, ({ one }) => ({
+    user: one(user, {
+        fields: [crowdfundingCertificates.userId],
+        references: [user.id],
     }),
 }));
 // ==================== ACADEMY SYSTEM ====================

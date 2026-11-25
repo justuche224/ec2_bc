@@ -344,4 +344,95 @@ export class CrowdfundingController {
             return c.json({ error: "Failed to get stats" }, 500);
         }
     }
+    // ==================== STAR ACHIEVEMENT & TEAM TREE ====================
+    static async getOverview(c) {
+        try {
+            const user = c.get("user");
+            if (!user) {
+                return c.json({ error: "Unauthorized: No user found" }, 401);
+            }
+            const data = await crowdfundingService.getUserAchievementOverview(user.id);
+            return c.json({ data }, 200);
+        }
+        catch (error) {
+            console.error("Error getting user achievement overview:", error);
+            return c.json({ error: "Failed to get overview" }, 500);
+        }
+    }
+    static async getTeamTree(c) {
+        try {
+            const user = c.get("user");
+            if (!user) {
+                return c.json({ error: "Unauthorized: No user found" }, 401);
+            }
+            const data = await crowdfundingService.getUserTeamTree(user.id);
+            return c.json({ data }, 200);
+        }
+        catch (error) {
+            console.error("Error getting user team tree:", error);
+            return c.json({ error: "Failed to get team tree" }, 500);
+        }
+    }
+    static async getCycleHistory(c) {
+        try {
+            const user = c.get("user");
+            if (!user) {
+                return c.json({ error: "Unauthorized: No user found" }, 401);
+            }
+            const data = await crowdfundingService.getUserCycleHistory(user.id);
+            return c.json({ data }, 200);
+        }
+        catch (error) {
+            console.error("Error getting cycle history:", error);
+            return c.json({ error: "Failed to get cycle history" }, 500);
+        }
+    }
+    static async getLedger(c) {
+        try {
+            const user = c.get("user");
+            if (!user) {
+                return c.json({ error: "Unauthorized: No user found" }, 401);
+            }
+            const data = await crowdfundingService.getUserLedger(user.id);
+            return c.json({ data }, 200);
+        }
+        catch (error) {
+            console.error("Error getting ledger:", error);
+            return c.json({ error: "Failed to get ledger" }, 500);
+        }
+    }
+    static async getCertificates(c) {
+        try {
+            const user = c.get("user");
+            if (!user) {
+                return c.json({ error: "Unauthorized: No user found" }, 401);
+            }
+            const data = await crowdfundingService.getUserCertificates(user.id);
+            return c.json({ data }, 200);
+        }
+        catch (error) {
+            console.error("Error getting certificates:", error);
+            return c.json({ error: "Failed to get certificates" }, 500);
+        }
+    }
+    static async getLeaderboard(c) {
+        try {
+            const data = await crowdfundingService.getLeaderboard(15);
+            return c.json({ data }, 200);
+        }
+        catch (error) {
+            console.error("Error getting leaderboard:", error);
+            return c.json({ error: "Failed to get leaderboard" }, 500);
+        }
+    }
+    static async getGlobalPool(c) {
+        try {
+            const data = await crowdfundingService.getGlobalPoolSummary();
+            return c.json({ data }, 200);
+        }
+        catch (error) {
+            console.error("Error getting global pool summary:", error);
+            return c.json({ error: "Failed to get global pool summary" }, 500);
+        }
+    }
 }
